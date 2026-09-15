@@ -1,5 +1,6 @@
 import re
 import yaml
+import difflib
 from typing import Dict, Any, List, Optional, Tuple
 
 class ColumnMapping:
@@ -26,7 +27,7 @@ class ContractEngine:
     against declarative YAML contracts, and preserving dynamic unmapped columns
     into a JSONB-ready payload.
     """
-    def __init__(self, contract_path_or_dict: Any):
+    def __init__(self, contract_path_or_dict: Any, similarity_threshold: Optional[float] = None):
         if isinstance(contract_path_or_dict, str):
             self.contract_path = contract_path_or_dict
             with open(contract_path_or_dict, "r", encoding="utf-8") as f:
@@ -37,6 +38,7 @@ class ContractEngine:
 
         self.dataset_id = self.config.get("dataset_id", "default_dataset")
         self.quarantine_threshold_pct = float(self.config.get("quarantine_threshold_pct", 15.0))
+        self.similarity_threshold = similarity_threshold if similarity_threshold is not None else float(self.config.get("similarity_threshold", 0.82))
         self.mappings: List[ColumnMapping] = []
         self._load_mappings()
 
@@ -129,6 +131,28 @@ class ContractEngine:
                     if matched_field:
                         break
 
+            # Pass 4: Fuzzy typo-tolerant similarity match
+            if not matched_field:
+                best_ratio = 0.0
+                best_candidate = None
+                for m in self.mappings:
+                    # Compare against target_field
+                    target_norm = self._normalize_header(m.target_field)
+                    r = difflib.SequenceMatcher(None, norm_h, target_norm).ratio()
+                    if r > best_ratio:
+                        best_ratio = r
+                        best_candidate = m.target_field
+                    # Compare against aliases
+                    for alias in m.aliases:
+                        alias_norm = self._normalize_header(alias)
+                        r = difflib.SequenceMatcher(None, norm_h, alias_norm).ratio()
+                        if r > best_ratio:
+                            best_ratio = r
+                            best_candidate = m.target_field
+
+                if best_ratio >= self.similarity_threshold:
+                    matched_field = best_candidate
+
             if matched_field:
                 resolved_map[raw_h] = matched_field
             else:
@@ -163,3 +187,31 @@ class ContractEngine:
                 metadata[raw_col] = val
 
         return canonical_data, metadata
+
+    def diff_headers(self, raw_headers: List[str]) -> Dict[str, Any]:
+        """
+        Audits raw headers against contract schema requirements.
+        Returns:
+            resolved_count: int
+            unmapped_count: int
+            resolved_map: {raw_header: canonical_field}
+            unmapped_headers: [raw_headers]
+            missing_required: [target_fields]
+            is_compliant: bool
+        """
+        resolved, unmapped = self.resolve_headers(raw_headers)
+        resolved_targets = set(resolved.values())
+
+        missing_required = [
+            m.target_field for m in self.mappings
+            if m.required and m.target_field not in resolved_targets
+        ]
+
+        return {
+            "resolved_count": len(resolved),
+            "unmapped_count": len(unmapped),
+            "resolved_map": resolved,
+            "unmapped_headers": unmapped,
+            "missing_required": missing_required,
+            "is_compliant": len(missing_required) == 0
+        }

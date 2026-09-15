@@ -1,0 +1,602 @@
+[
+  {
+    "header": "موافقة على التغطية الإعلامية والتصوير *",
+    "input_text": "Header: موافقة على التغطية الإعلامية والتصوير * | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Institution",
+    "input_text": "Header: Institution | Samples: جامعة الملك عبدالعزيز, جامعة جدة, King Fahd University of Petroleum &",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "الايميل الشخصي",
+    "input_text": "Header: الايميل الشخصي | Samples: Salman Al-Harbi, Nouf Al-Otaibi, Tariq Al-Ali",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "Preferred Tracks",
+    "input_text": "Header: Preferred Tracks | Samples: Python، Docker، SQL, Pandas, Scikit-Learn, PyTorch, Java; C++; SQL",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "يرجى إدخال Personal Email",
+    "input_text": "Header: يرجى إدخال Personal Email | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "موافقة على التغطية الإعلامية والتصوير",
+    "input_text": "Header: موافقة على التغطية الإعلامية والتصوير | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Biggest distraction in daily work",
+    "input_text": "Header: Biggest distraction in daily work | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "University / College",
+    "input_text": "Header: University / College | Samples: ذكر, أنثى, Male",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "حقل: Consent to media coverage & photos",
+    "input_text": "Header: حقل: Consent to media coverage & photos | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "هل حضرت ورشة العمل السابقة؟",
+    "input_text": "Header: هل حضرت ورشة العمل السابقة؟ | Samples: Yes, No, Yes",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "المعدل التراكمي",
+    "input_text": "Header: المعدل التراكمي | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "حالة الحضور",
+    "input_text": "Header: حالة الحضور | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "يرجى إدخال الاسم الكامل",
+    "input_text": "Header: يرجى إدخال الاسم الكامل | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "مجالات الاهتمام المفضلة",
+    "input_text": "Header: مجالات الاهتمام المفضلة | Samples: الأحد، الثلاثاء, السبت فقط, جميع الأيام",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "البريد الجامعي",
+    "input_text": "Header: البريد الجامعي | Samples: student@uj.edu.sa, participant@kau.edu.sa, admin@kfupm.edu.sa",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "University / College",
+    "input_text": "Header: University / College | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "Consent to media coverage & photos",
+    "input_text": "Header: Consent to media coverage & photos | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "يرجى إدخال Personal Email",
+    "input_text": "Header: يرجى إدخال Personal Email | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "يرجى إدخال Cell Phone",
+    "input_text": "Header: يرجى إدخال Cell Phone | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "يرجى إدخال لماذا ترغب بالانضمام إلى هذا المعسكر؟",
+    "input_text": "Header: يرجى إدخال لماذا ترغب بالانضمام إلى هذا المعسكر؟ | Samples: صعوبة التعامل مع البيانات غير المنظ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "يرجى إدخال Do you agree to terms?",
+    "input_text": "Header: يرجى إدخال Do you agree to terms? | Samples: Yes, No, Yes",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Evaluation Score",
+    "input_text": "Header: Evaluation Score | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "يرجى إدخال ما هي تطلعاتك وأهدافك من البرنامج؟",
+    "input_text": "Header: يرجى إدخال ما هي تطلعاتك وأهدافك من البرنامج؟ | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "هل توافق على الشروط والأحكام؟",
+    "input_text": "Header: هل توافق على الشروط والأحكام؟ | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "تحدث باختصار عن مشروع تقني قمت ببنائه",
+    "input_text": "Header: تحدث باختصار عن مشروع تقني قمت ببنائه | Samples: وسائل التواصل الاجتماعي والإشعارات ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "المستوى الدراسي",
+    "input_text": "Header: المستوى الدراسي | Samples: 441002938, 442001928, 443009182",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "يرجى إدخال Registered At Date",
+    "input_text": "Header: يرجى إدخال Registered At Date | Samples: جامعة الملك عبدالعزيز, جامعة جدة, King Fahd University of Petroleum &",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "حقل: Personal Email",
+    "input_text": "Header: حقل: Personal Email | Samples: student@uj.edu.sa, participant@kau.edu.sa, admin@kfupm.edu.sa",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "Do you agree to terms? *",
+    "input_text": "Header: Do you agree to terms? * | Samples: نعم, لا, نعم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Technical Skills (Multi-select)",
+    "input_text": "Header: Technical Skills (Multi-select) | Samples: Python، Docker، SQL, Pandas, Scikit-Learn, PyTorch, Java; C++; SQL",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "ملاحظات أو اقتراحات إضافية تود مشاركتها",
+    "input_text": "Header: ملاحظات أو اقتراحات إضافية تود مشاركتها | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Academic Level",
+    "input_text": "Header: Academic Level | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "الاسم الكامل",
+    "input_text": "Header: الاسم الكامل | Samples: 1098765432, 2198765432, 1122334455",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "الجهة التعليمية",
+    "input_text": "Header: الجهة التعليمية | Samples: جامعة الملك عبدالعزيز, جامعة جدة, King Fahd University of Petroleum &",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "رقم الجوال",
+    "input_text": "Header: رقم الجوال | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "الايميل الشخصي",
+    "input_text": "Header: الايميل الشخصي | Samples: 1098765432, 2198765432, 1122334455",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "English Name",
+    "input_text": "Header: English Name | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "اسم المشارك بالعربي",
+    "input_text": "Header: اسم المشارك بالعربي | Samples: 1098765432, 2198765432, 1122334455",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "حقل: LinkedIn URL",
+    "input_text": "Header: حقل: LinkedIn URL | Samples: https://linkedin.com/in/fahad, https://github.com/salman",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "يرجى إدخال Why do you want to join?",
+    "input_text": "Header: يرجى إدخال Why do you want to join? | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "حقل: Consent to media coverage & photos",
+    "input_text": "Header: حقل: Consent to media coverage & photos | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Participant Full Name",
+    "input_text": "Header: Participant Full Name | Samples: عبدالله محمد السالم, فهد الدوسري, سارة إبراهيم الشريف",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "صف أبرز التحديات التي واجهتك سابقاً",
+    "input_text": "Header: صف أبرز التحديات التي واجهتك سابقاً | Samples: وسائل التواصل الاجتماعي والإشعارات ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "اسم المشارك بالعربي *",
+    "input_text": "Header: اسم المشارك بالعربي * | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "مجالات الاهتمام المفضلة",
+    "input_text": "Header: مجالات الاهتمام المفضلة | Samples: Yes, No, Yes",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Consent to media coverage & photos *",
+    "input_text": "Header: Consent to media coverage & photos * | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "رقم الواتساب للتواصل",
+    "input_text": "Header: رقم الواتساب للتواصل | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "Why do you want to join?",
+    "input_text": "Header: Why do you want to join? | Samples: وسائل التواصل الاجتماعي والإشعارات ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "يرجى إدخال الاسم الرباعي",
+    "input_text": "Header: يرجى إدخال الاسم الرباعي | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "حقل: السنة الأكاديمية",
+    "input_text": "Header: حقل: السنة الأكاديمية | Samples: 4.85 / 5.0, 3.90 / 4.0, 95.5%",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "اسم المشارك بالعربي",
+    "input_text": "Header: اسم المشارك بالعربي | Samples: عبدالله محمد السالم, فهد الدوسري, سارة إبراهيم الشريف",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "Tell us about a technical project you built",
+    "input_text": "Header: Tell us about a technical project you built | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "جامعة التخرج",
+    "input_text": "Header: جامعة التخرج | Samples: 4.85 / 5.0, 3.90 / 4.0, 95.5%",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "ما أكبر مسبب للتشتت الذهني أثناء العمل أو الدراسة؟",
+    "input_text": "Header: ما أكبر مسبب للتشتت الذهني أثناء العمل أو الدراسة؟ | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "رابط حساب لينكد إن",
+    "input_text": "Header: رابط حساب لينكد إن | Samples: علوم الحاسب, الذكاء الاصطناعي, هندسة البرمجيات",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "Active Club Member?",
+    "input_text": "Header: Active Club Member? | Samples: Yes, No, Yes",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Phone Number",
+    "input_text": "Header: Phone Number | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "Biggest distraction in daily work",
+    "input_text": "Header: Biggest distraction in daily work | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Tell us about a technical project you built",
+    "input_text": "Header: Tell us about a technical project you built | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "القسم العلمي",
+    "input_text": "Header: القسم العلمي | Samples: 441002938, 442001928, 443009182",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "اختر المسار التدريبي المناسب",
+    "input_text": "Header: اختر المسار التدريبي المناسب | Samples: Yes, No, Yes",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "حقل: Portfolio Link",
+    "input_text": "Header: حقل: Portfolio Link | Samples: سنة أولى, سنة ثالثة, خريج",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "Academic ID No",
+    "input_text": "Header: Academic ID No | Samples: جدة, الرياض, الدمام",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "هل توافق على الشروط والأحكام؟ *",
+    "input_text": "Header: هل توافق على الشروط والأحكام؟ * | Samples: موافق, غير موافق",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "هل أنت عضو في النادي؟",
+    "input_text": "Header: هل أنت عضو في النادي؟ | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "اسم الطالب *",
+    "input_text": "Header: اسم الطالب * | Samples: student@uj.edu.sa, participant@kau.edu.sa, admin@kfupm.edu.sa",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "مجالات الاهتمام المفضلة",
+    "input_text": "Header: مجالات الاهتمام المفضلة | Samples: موافق, غير موافق",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "What are your expectations?",
+    "input_text": "Header: What are your expectations? | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "ملاحظات أو اقتراحات إضافية تود مشاركتها",
+    "input_text": "Header: ملاحظات أو اقتراحات إضافية تود مشاركتها | Samples: صعوبة التعامل مع البيانات غير المنظ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "What are your expectations? *",
+    "input_text": "Header: What are your expectations? * | Samples: نأمل توفير تسجيلات مرئية للورش وتوف",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "رابط حساب لينكد إن",
+    "input_text": "Header: رابط حساب لينكد إن | Samples: جدة, الرياض, الدمام",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "أيام الحضور المفضلة",
+    "input_text": "Header: أيام الحضور المفضلة | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Department",
+    "input_text": "Header: Department | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "يرجى إدخال اسم المشارك بالعربي",
+    "input_text": "Header: يرجى إدخال اسم المشارك بالعربي | Samples: Salman Al-Harbi, Nouf Al-Otaibi, Tariq Al-Ali",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "القسم العلمي",
+    "input_text": "Header: القسم العلمي | Samples: 2026-09-01 14:30:00, 2026-09-02 09:15:22, 46266.6125",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "ما هي تطلعاتك وأهدافك من البرنامج؟ *",
+    "input_text": "Header: ما هي تطلعاتك وأهدافك من البرنامج؟ * | Samples: نأمل توفير تسجيلات مرئية للورش وتوف",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Personal Email",
+    "input_text": "Header: Personal Email | Samples: fahad@gmail.com, sarah99@hotmail.com, tariq.ali@outlook.com",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "رابط حساب لينكد إن",
+    "input_text": "Header: رابط حساب لينكد إن | Samples: ذكر, أنثى, Male",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "لماذا ترغب بالانضمام إلى هذا المعسكر؟",
+    "input_text": "Header: لماذا ترغب بالانضمام إلى هذا المعسكر؟ | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Why do you want to join?",
+    "input_text": "Header: Why do you want to join? | Samples: وسائل التواصل الاجتماعي والإشعارات ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "يرجى إدخال صف أبرز التحديات التي واجهتك سابقاً",
+    "input_text": "Header: يرجى إدخال صف أبرز التحديات التي واجهتك سابقاً | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "موافقة على التغطية الإعلامية والتصوير *",
+    "input_text": "Header: موافقة على التغطية الإعلامية والتصوير * | Samples: نعم, لا, نعم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "المنطقة / الفرع",
+    "input_text": "Header: المنطقة / الفرع | Samples: 441002938, 442001928, 443009182",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "الاسم الرباعي",
+    "input_text": "Header: الاسم الرباعي | Samples: Salman Al-Harbi, Nouf Al-Otaibi, Tariq Al-Ali",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "حقل: حاضر / غائب",
+    "input_text": "Header: حقل: حاضر / غائب | Samples: حاضر, غائب, معتذر",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Sex",
+    "input_text": "Header: Sex | Samples: https://linkedin.com/in/fahad, https://github.com/salman",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "لماذا ترغب بالانضمام إلى هذا المعسكر؟",
+    "input_text": "Header: لماذا ترغب بالانضمام إلى هذا المعسكر؟ | Samples: نأمل توفير تسجيلات مرئية للورش وتوف",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Do you agree to terms?",
+    "input_text": "Header: Do you agree to terms? | Samples: مسار الذكاء الاصطناعي, مسار هندسة البيانات, مسار تحليل النظم",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "Full Name (English)",
+    "input_text": "Header: Full Name (English) | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "يرجى إدخال ما أكبر مسبب للتشتت الذهني أثناء العمل أو الدراسة؟",
+    "input_text": "Header: يرجى إدخال ما أكبر مسبب للتشتت الذهني أثناء العمل أو الدراسة؟ | Samples: وسائل التواصل الاجتماعي والإشعارات ",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "يرجى إدخال التخصص الأكاديمي",
+    "input_text": "Header: يرجى إدخال التخصص الأكاديمي | Samples: https://linkedin.com/in/fahad, https://github.com/salman",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "Student ID *",
+    "input_text": "Header: Student ID * | Samples: 4.85 / 5.0, 3.90 / 4.0, 95.5%",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "يرجى إدخال Consent to media coverage & photos",
+    "input_text": "Header: يرجى إدخال Consent to media coverage & photos | Samples: الأحد، الثلاثاء, السبت فقط, جميع الأيام",
+    "label": 2,
+    "group": "Categorical/MultiSelect"
+  },
+  {
+    "header": "صف أبرز التحديات التي واجهتك سابقاً",
+    "input_text": "Header: صف أبرز التحديات التي واجهتك سابقاً | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "Describe past technical challenges",
+    "input_text": "Header: Describe past technical challenges | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "حقل: اسم الطالب",
+    "input_text": "Header: حقل: اسم الطالب | Samples: Salman Al-Harbi, Nouf Al-Otaibi, Tariq Al-Ali",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "LinkedIn URL",
+    "input_text": "Header: LinkedIn URL | Samples: https://linkedin.com/in/fahad, https://github.com/salman",
+    "label": 1,
+    "group": "Structured/MetaData"
+  },
+  {
+    "header": "Student University Email",
+    "input_text": "Header: Student University Email | Samples: 0501234567, +966554433221, 00966541239876",
+    "label": 0,
+    "group": "Identity"
+  },
+  {
+    "header": "يرجى إدخال Additional Comments & Feedback",
+    "input_text": "Header: يرجى إدخال Additional Comments & Feedback | Samples: الاستفادة من خبرات المدربين والتواص",
+    "label": 3,
+    "group": "Free-Form"
+  },
+  {
+    "header": "حقل: ما هي تطلعاتك وأهدافك من البرنامج؟",
+    "input_text": "Header: حقل: ما هي تطلعاتك وأهدافك من البرنامج؟ | Samples: أرغب في تطوير مهاراتي العملية في بن",
+    "label": 3,
+    "group": "Free-Form"
+  }
+]

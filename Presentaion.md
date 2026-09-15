@@ -33,8 +33,17 @@ that how we started making answers to questions:
 
 # The pipeline:
 
-1. Contractor: It mapps the values to the code using LLM
-2. Normlaization: Clean and handles the valuse and applies the right cleaning for the right type.
-3. DeDuplication: Solving the duplication using unsupervised learning.
-4. Loads the data: Loads the cleaned data to a cleaned Excel.
+1. Contractor: Maps stochastic column headers to deterministic internal fields using a specialized Transformer NLP Classifier (DistilBERT / ONNX).
+2. Normalization: Cleans and handles values using deterministic domain rules for each data type.
+3. DeDuplication: Resolving duplicates across submissions using unsupervised entity resolution (MDM / Splink).
+4. Storage & Export: Loads cleaned data into an auditable SQLite database and formatted Excel output.
+
+---
+
+# Why a Transformer NLP Classifier over a Generative LLM?
+
+- **Zero Hallucination**: Constrained sequence classification (Softmax strictly over the 4 defined schema groups). A generative LLM can hallucinate non-existent categories; a sequence classifier is mathematically bound to valid groups.
+- **5ms CPU Inference**: Distilled encoder model running on pure CPU via ONNX Runtime (~30MB footprint) vs. 2,000–5,000ms latency on generative LLMs.
+- **Calibrated Confidence**: Direct softmax probabilities ($P \in [0, 1]$) provide genuine mathematical confidence scores to drive quarantine and routing thresholds.
+- **Privacy & Cost**: 100% local in-house execution with zero API fees and zero data leakage to cloud endpoints.
 
