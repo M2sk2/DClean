@@ -105,18 +105,46 @@ class HybridEntityResolver:
         # Phase 2: Probabilistic Match (Jaro-Winkler across names)
         # -------------------------------------------------------------
         if not matched_person_id:
-            query_key_ar = parsed_name_ar.normalized_key if parsed_name_ar else ""
-            query_key_en = parsed_name_en.normalized_key if parsed_name_en else ""
+            query_key_ar = (
+                parsed_name_ar.normalized_key.casefold()
+                if parsed_name_ar and parsed_name_ar.normalized_key
+                else ""
+            )
+
+            query_key_en = (
+                parsed_name_en.normalized_key.casefold()
+                if parsed_name_en and parsed_name_en.normalized_key
+                else ""
+            )
 
             best_sim = 0.0
             best_cand_id = None
 
             for p_id, p in self.persons_by_id.items():
-                cand_key_ar = p.full_name_ar or ""
-                cand_key_en = p.full_name_en or ""
+                cand_key_ar = (
+                    p.full_name_ar.casefold()
+                    if p.full_name_ar
+                    else ""
+                )
 
-                sim_ar = jaro_winkler_similarity(query_key_ar, cand_key_ar) if query_key_ar and cand_key_ar else 0.0
-                sim_en = jaro_winkler_similarity(query_key_en, cand_key_en) if query_key_en and cand_key_en else 0.0
+                cand_key_en = (
+                    p.full_name_en.casefold()
+                    if p.full_name_en
+                    else ""
+                )
+
+                sim_ar = (
+                    jaro_winkler_similarity(query_key_ar, cand_key_ar)
+                    if query_key_ar and cand_key_ar
+                    else 0.0
+                )
+
+                sim_en = (
+                    jaro_winkler_similarity(query_key_en, cand_key_en)
+                    if query_key_en and cand_key_en
+                    else 0.0
+                )
+
                 max_name_sim = max(sim_ar, sim_en)
 
                 if max_name_sim > best_sim:
@@ -196,29 +224,45 @@ class HybridEntityResolver:
     def add_registration_event(self, registration: FactRegistration):
         """
         Adds registration event applying duplicate survivorship.
-        If the same person registered for the same dataset multiple times (within or across sheets):
+
+        If the same person registered for the same dataset multiple times
+        (within or across sheets):
         - Keeps latest timestamp.
         - Preserves positive attendance status.
         - Merges metadata.
         """
+
         existing_idx = None
+
         for i, reg in enumerate(self.registrations):
-            if reg.person_id == registration.person_id and reg.dataset_id == registration.dataset_id:
+            if (
+                reg.person_id == registration.person_id
+                and reg.dataset_id == registration.dataset_id
+            ):
                 existing_idx = i
                 break
 
         if existing_idx is not None:
-            # Duplicate event detected! Apply survivorship
+            # Duplicate event detected. Apply survivorship.
             existing_reg = self.registrations[existing_idx]
             self.merged_duplicate_count += 1
-            
+
             # Survivorship: Keep positive attendance
             if registration.attended_flag:
                 existing_reg.attended_flag = True
+
             # Survivorship: Keep latest timestamp
             if registration.registered_at > existing_reg.registered_at:
                 existing_reg.registered_at = registration.registered_at
-                existing_reg.sheet_name = f"{existing_reg.sheet_name}, {registration.sheet_name}"
-                existing_reg.raw_metadata.update(registration.raw_metadata)
+                existing_reg.sheet_name = (
+                    f"{existing_reg.sheet_name}, "
+                    f"{registration.sheet_name}"
+                )
+
+            # Survivorship: Always merge metadata
+            existing_reg.raw_metadata.update(
+                registration.raw_metadata
+            )
+
         else:
             self.registrations.append(registration)
