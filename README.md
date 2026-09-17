@@ -1,17 +1,18 @@
 # DClean: Generalized Data Cleaning & Entity Resolution Pipeline
 
-A high-performance, generalized ETL pipeline designed for bilingual (Arabic & English) tabular survey datasets (`.xlsx` and `.csv`). Built in strict accordance with the project guidelines in [`Guidelines/`](Guidelines/).
+A high-performance, generalized ETL system designed for bilingual (Arabic & English) tabular survey datasets (`.xlsx` and `.csv`). Built in strict accordance with the project guidelines in [`Guidelines/`](Guidelines/).
 
 ---
 
 ## Key Highlights
 
+- **Interactive Streamlit Dashboard**: Full web studio ([`dashboard.py`](dashboard.py)) with raw data preview, contract strategy toggles, real-time audit metrics, quarantine inspection, and dual Excel/SQLite export.
 - **Local NLP Column Classifier**: Replaced slow generative LLMs with a lightweight, local sequence classifier (<1ms CPU inference, **97.31% validation accuracy**, zero hallucination risk).
-- **Deterministic Identity Normalization**: Heals Excel dropped-zero bugs on Saudi phones (`508889900` $\rightarrow$ `+966508889900`), fixes domain typos (`@gmaill.com` $\rightarrow$ `@gmail.com`), and parses compound Arabic names (`عبد الله` $\rightarrow$ `عبدالله`).
+- **Deterministic Identity Normalization**: Heals Excel dropped-zero bugs on Saudi phones (`508889900` $\rightarrow$ `+966508889900`), fixes email domain typos (`@gmaill.com` $\rightarrow$ `@gmail.com`), and parses compound Arabic names (`عبد الله` $\rightarrow$ `عبدالله`).
 - **Comprehensive Controlled Vocabularies**: 680+ canonical mappings for Saudi universities, colleges, majors, and native academic levels ([`pipeline/lookup_data.py`](pipeline/lookup_data.py)).
-- **Quarantine Dead-Letter Store**: Isolates invalid records with specific rejection codes to prevent pipeline corruption without silent data loss.
+- **Quarantine Dead-Letter Store**: Isolates un-linkable or corrupt records with machine-readable rejection reason codes (`MISSING_REQUIRED_NAME`, `MISSING_IDENTIFIER_RECORD_CANNOT_BE_LINKED`, etc.).
 - **MDM Entity Resolution**: Combines deterministic indexing and probabilistic Jaro-Winkler matching with reproducible UUIDv5 clustering and survivorship rules.
-- **Relational & Business Outputs**: Dual persistence into SQLite (relational schema with `PRAGMA foreign_keys = ON`) and pristine formatted Excel (natural business columns without synthetic internal IDs).
+- **Windows Desktop & Shell Integration**: One-click installer with desktop shortcut, Windows Explorer right-click context menu (*"Clean with DClean"*), and global terminal CLI (`dclean`).
 
 ---
 
@@ -66,53 +67,90 @@ A high-performance, generalized ETL pipeline designed for bilingual (Arabic & En
 
 ---
 
-## Quickstart & Windows Installation
+## Prerequisites & Setup
 
-### Option 1: One-Click Windows Setup (Zero Admin Rights Needed)
-Double-click [`installer/install.bat`](installer/install.bat) or run in PowerShell:
+### Option A: Standard Developer Setup (All Platforms)
+For running directly from source on Windows, macOS, or Linux (Python 3.10+):
+```powershell
+# 1. Clone the repository
+git clone https://github.com/M2sk2/DClean.git
+cd DClean
+
+# 2. Install dependencies
+pip install -r requirements.txt
+```
+
+---
+
+### Option B: Windows One-Click Installer (Zero Admin Rights Needed)
+Double-click [`installer/install.bat`](installer/install.bat) or execute in PowerShell:
 ```powershell
 powershell -ExecutionPolicy Bypass -File installer/install.ps1
 ```
-- Installs to `%LocalAppData%\Programs\DClean`.
-- Generates Desktop and Start Menu shortcuts with app icon.
-- Adds `dclean` to your system `PATH` for terminal access.
-- Adds **"Clean with DClean"** right-click context menu to `.xlsx`, `.csv`, and `.xlsm` files.
-- To uninstall anytime: run [`installer/uninstall.bat`](installer/uninstall.bat).
+- **Target Location**: `%LocalAppData%\Programs\DClean` (no administrator privileges required).
+- **Desktop & Start Menu**: Creates desktop shortcut and start menu item with custom high-res icon.
+- **System PATH**: Adds `dclean` to user `PATH` for seamless terminal access in new command prompts.
+- **Windows Explorer Context Menu**: Right-click any `.xlsx`, `.csv`, or `.xlsm` file and select **"Clean with DClean"** to clean instantly.
+- **Uninstall**: Run [`installer/uninstall.bat`](installer/uninstall.bat) anytime for clean removal.
 
-### Option 2: Desktop GUI Studio
-Launch DClean anytime via your Desktop shortcut or run:
+> [!NOTE]
+> During installation, stage `[4/6]` installs the local virtual environment and pre-compiled wheels (`pandas`, `scikit-learn`, `streamlit`). This step takes 1–2 minutes on first run.
+
+---
+
+## Quickstart & Usage
+
+### 1. Launch the Interactive Web Studio (Streamlit Dashboard)
+Run the browser-based studio for interactive file upload, live previews, and dual exports:
 ```powershell
-dclean gui
-# or
-py installer/dclean_launcher.py
+py -m streamlit run dashboard.py
+# or if installed via installer:
+dclean dashboard
 ```
+- **Live Preview**: Inspect uploaded raw tabular datasets before processing.
+- **Contract Strategy**: Switch between **Auto-Detect** (Local NLP Classifier) and **Declarative YAML Contracts** from `config/`.
+- **Audit & Governance**: View live KPIs (valid rows, quarantine rate, unique persons resolved, duplicate events merged).
+- **Tabbed Results Review**: Inspect the Cleaned dataset side-by-side with Quarantined records and machine-readable rejection codes.
+- **Dual Export**: One-click download for formatted Excel (`.xlsx`) and SQLite relational database (`.db`).
 
-### Option 3: Standard Terminal CLI
+---
+
+### 2. Command-Line Interface (CLI)
+
+Clean datasets directly from your terminal:
 ```powershell
-py -m pip install -r requirements.txt
-
-# Run with auto-detected schema (Local NLP sequence classifier)
+# Clean with auto-detected schema (Local NLP sequence classifier)
 dclean clean -i "RawData/Distraction_Era_Workshop_Dataset.xlsx"
+# or directly with Python:
+py -m pipeline.cli -i "RawData/Distraction_Era_Workshop_Dataset.xlsx"
 
-# Run with an explicit declarative contract
+# Clean with an explicit declarative YAML contract
 dclean clean -i "RawData/Developers_Committee_2026_Responses.xlsx" -c "config/developers_committee_contract.yaml"
+
+# Launch desktop GUI or web studio
+dclean gui
+dclean dashboard
 ```
 
-### 3. Contract Tools (Validation, Diffing, Generation)
+---
+
+### 3. Contract Schema Tools
 
 ```powershell
-# Validate an existing YAML contract
-py -m pipeline.contract_generator validate -c "config/workshop_contract.yaml"
+# Validate an existing YAML contract against project rules
+dclean validate -c "config/workshop_contract.yaml"
 
-# Diff a spreadsheet's headers against a contract
-py -m pipeline.contract_generator diff -i "RawData/Distraction_Era_Workshop_Dataset.xlsx" -c "config/workshop_contract.yaml"
+# Diff a spreadsheet's headers against a contract schema
+dclean diff -i "RawData/Distraction_Era_Workshop_Dataset.xlsx" -c "config/workshop_contract.yaml"
 
 # Auto-generate a new contract YAML from raw data
-py -m pipeline.contract_generator generate -i "RawData/Distraction_Era_Workshop_Dataset.xlsx" -o "config/new_contract.yaml"
+dclean generate -i "RawData/Distraction_Era_Workshop_Dataset.xlsx" -o "config/new_contract.yaml"
 ```
 
+---
+
 ### 4. Train / Retrain the Column Classifier
-Harvests actual column headers and cells directly from `RawData/`:
+Harvests real column headers and sample cell values directly from spreadsheets in `RawData/`:
 ```powershell
 py tools/train_column_classifier.py --fast-only
 ```
@@ -121,12 +159,12 @@ py tools/train_column_classifier.py --fast-only
 
 ## Testing & Quality Assurance
 
-Run the comprehensive test suite (65 tests):
+Run the complete test suite (**72 automated tests**):
 ```powershell
 py -m pytest -v
 ```
 
-For complete test logs, confusion matrices, and benchmarks across 5 real datasets, see [**`TEST_REPORT.md`**](TEST_REPORT.md).
+For full test reports, confusion matrices, and validation benchmarks across 5 real datasets, see [**`TEST_REPORT.md`**](TEST_REPORT.md).
 
 ---
 
@@ -155,6 +193,7 @@ print(f"Unique Persons Resolved: {summary.unique_persons_resolved} | Status: {su
 
 ```text
 DataCleaning/
+├── dashboard.py              # Interactive Streamlit Web Studio
 ├── pipeline/                 # Core generalized ETL engine
 │   ├── cli.py                # Command-line interface
 │   ├── contract_engine.py    # Schema resolver & fuzzy header matching
@@ -167,12 +206,20 @@ DataCleaning/
 │   ├── runner.py             # Multi-sheet workbook orchestrator
 │   ├── schema.py             # Pydantic data contracts
 │   └── storage.py            # SQLite & multi-sheet styled Excel persistence
+├── installer/                # Windows installation & packaging suite
+│   ├── install.bat / .ps1    # Automated installer (Non-admin HKCU & AppData)
+│   ├── uninstall.bat / .ps1  # Clean uninstaller
+│   ├── dclean_launcher.py    # Desktop GUI & right-click cleaner
+│   ├── dclean_cli.py         # Global CLI wrapper
+│   ├── dclean_setup.iss      # Inno Setup compiler script
+│   ├── dclean.spec           # PyInstaller standalone specification
+│   └── assets/               # Application icons (.ico)
 ├── config/                   # Declarative YAML schema contracts
 ├── models/                   # Trained NLP column classification weights (.joblib)
 ├── tools/                    # Data harvesting & model training scripts
 ├── RawData/                  # Input spreadsheets
 ├── CleanData/                # Processed output workbooks & SQLite database
-├── tests/                    # 65 unit, integration, and stress tests
+├── tests/                    # 72 unit, integration, and stress tests
 ├── TEST_REPORT.md            # Quality assurance and verification report
 └── README.md                 # Project documentation
 ```
