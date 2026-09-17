@@ -8,6 +8,8 @@ class QuarantineManager:
     with machine-readable rejection vectors to prevent pipeline corruption.
     """
     def __init__(self, threshold_pct: float = 15.0):
+        if not 0 <= threshold_pct <= 100:
+            raise ValueError("threshold_pct must be between 0 and 100")
         self.threshold_pct = threshold_pct
         self.records: List[QuarantineRecord] = []
 
@@ -50,6 +52,8 @@ class QuarantineManager:
         return None
 
     def get_quarantine_rate(self, total_rows: int) -> float:
+        if total_rows < 0:
+            raise ValueError("total_rows must be non-negative")
         if total_rows == 0:
             return 0.0
         return round((len(self.records) / total_rows) * 100.0, 2)
