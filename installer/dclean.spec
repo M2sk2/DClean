@@ -6,6 +6,8 @@ import os
 block_cipher = None
 PROJECT_ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 
+from PyInstaller.utils.hooks import copy_metadata, collect_data_files, collect_submodules
+
 datas = [
     (os.path.join(PROJECT_ROOT, "pipeline"), "pipeline"),
     (os.path.join(PROJECT_ROOT, "models"), "models"),
@@ -15,6 +17,9 @@ datas = [
 
 if os.path.exists(os.path.join(PROJECT_ROOT, "dashboard.py")):
     datas.append((os.path.join(PROJECT_ROOT, "dashboard.py"), "."))
+
+datas += collect_data_files("streamlit")
+datas += copy_metadata("streamlit")
 
 hiddenimports = [
     "pandas",
@@ -37,8 +42,12 @@ hiddenimports = [
     "tkinter",
     "tkinter.ttk",
     "tkinter.filedialog",
-    "tkinter.messagebox"
-]
+    "tkinter.messagebox",
+    "uvicorn",
+    "tornado",
+    "altair",
+    "pyarrow"
+] + collect_submodules("streamlit")
 
 a = Analysis(
     [os.path.join(PROJECT_ROOT, "installer", "dclean_launcher.py")],

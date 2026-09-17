@@ -68,10 +68,10 @@ def run_headless_clean(file_path: str, contract_path: Optional[str] = None) -> b
 
     return True
 
-def launch_dashboard() -> bool:
+def launch_streamlit_direct() -> bool:
     """
-    Checks if a team dashboard module exists (e.g. dashboard.py or dashboard/app.py).
-    If found, launches it via Streamlit using a system Python runtime.
+    Launches the modern Streamlit studio directly in-process, opens default browser,
+    hides any terminal window, and automatically shuts down when the browser tab is closed.
     """
     candidates = [
         os.path.join(PROJECT_ROOT, "dashboard.py"),
@@ -87,24 +87,65 @@ def launch_dashboard() -> bool:
     if not target_dashboard:
         return False
 
-    print(f"[DClean] Found dashboard at {target_dashboard}. Launching Streamlit...")
+    try:
+        import threading
+        import time
+        from streamlit.web import bootstrap
 
-    # Determine Python executable candidates
-    python_cmds = []
-    if not getattr(sys, "frozen", False):
-        python_cmds.append([sys.executable])
-    python_cmds.extend([["py", "-3"], ["python"], ["py"]])
+        def monitor_tab_close():
+            from streamlit.runtime.runtime import Runtime, RuntimeState
 
-    for py_cmd in python_cmds:
-        try:
-            cmd = py_cmd + ["-m", "streamlit", "run", target_dashboard]
-            res = subprocess.run(cmd)
-            if res.returncode == 0:
-                return True
-        except Exception:
-            continue
+            # Wait for runtime initialization
+            while not Runtime.exists():
+                time.sleep(0.5)
 
-    return False
+            # Wait up to 60s for the browser to open and connect
+            connected_once = False
+            start_wait = time.time()
+            while time.time() - start_wait < 60:
+                time.sleep(0.5)
+                if not Runtime.exists():
+                    return
+                if Runtime.instance().state == RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED:
+                    connected_once = True
+                    break
+
+            if not connected_once:
+                # Browser never connected within 60 seconds
+                os._exit(0)
+
+            # Once connected, monitor for tab closure
+            disconnect_time = None
+            while True:
+                time.sleep(1)
+                if not Runtime.exists():
+                    return
+                state = Runtime.instance().state
+                if state == RuntimeState.ONE_OR_MORE_SESSIONS_CONNECTED:
+                    disconnect_time = None
+                elif state == RuntimeState.NO_SESSIONS_CONNECTED:
+                    if disconnect_time is None:
+                        disconnect_time = time.time()
+                    elif time.time() - disconnect_time >= 3.0:
+                        # 3 second grace period for page refresh (F5)
+                        os._exit(0)
+
+        # Start browser tab monitor thread
+        watcher = threading.Thread(target=monitor_tab_close, daemon=True)
+        watcher.start()
+
+        flag_options = {
+            "server.headless": False,
+            "browser.gatherUsageStats": False,
+            "global.developmentMode": False,
+            "server.runOnSave": False,
+        }
+
+        bootstrap.run(target_dashboard, is_hello=False, args=[], flag_options=flag_options)
+        return True
+    except Exception as e:
+        print(f"[DClean] Could not start Streamlit in-process: {e}")
+        return False
 
 def launch_desktop_gui(initial_file: Optional[str] = None):
     """
@@ -326,7 +367,7 @@ def launch_desktop_gui(initial_file: Optional[str] = None):
     folder_btn.pack(side="left", padx=5)
 
     def open_dashboard_from_gui():
-        res = launch_dashboard()
+        res = launch_streamlit_direct()
         if not res:
             messagebox.showinfo("DClean", "Could not start Streamlit web studio.\nPlease ensure Python and streamlit are installed on your machine ('pip install streamlit').")
 
@@ -342,24 +383,27 @@ def main():
     parser = argparse.ArgumentParser(description="DClean Desktop Launcher & Headless Processor")
     parser.add_argument("file", nargs="?", default=None, help="Optional raw tabular file to clean immediately")
     parser.add_argument("--contract", "-c", default=None, help="Optional YAML contract path")
-    parser.add_argument("--gui", action="store_true", help="Force open desktop GUI window")
+    parser.add_argument("--gui", action="store_true", help="Force open legacy desktop GUI window")
     parser.add_argument("--dashboard", action="store_true", help="Launch Streamlit web dashboard")
 
     args = parser.parse_args()
 
-    # 1. If dashboard explicitly requested via --dashboard flag
-    if args.dashboard:
-        if launch_dashboard():
-            return
-        print("[DClean] Streamlit dashboard could not be started. Falling back to desktop GUI...")
-
-    # 2. If a file was passed as argument without --gui (e.g. from Windows Explorer context menu)
+    # 1. If a file was passed as argument without --gui (e.g. from Windows Explorer context menu)
     if args.file and not args.gui:
         success = run_headless_clean(args.file, contract_path=args.contract)
         sys.exit(0 if success else 1)
 
+    # 2. If legacy GUI explicitly forced via --gui flag
+    if args.gui:
+        launch_desktop_gui(initial_file=args.file)
+        return
+
     # 3. Default interactive mode (desktop icon, Start Menu, or double-click):
-    # Launch the native responsive desktop GUI Studio!
+    # Directly launch modern Streamlit Web Studio in default browser with silent background!
+    if launch_streamlit_direct():
+        return
+
+    # 4. Fallback only if Streamlit fails
     launch_desktop_gui(initial_file=args.file)
 
 if __name__ == "__main__":
