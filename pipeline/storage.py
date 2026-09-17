@@ -32,6 +32,7 @@ class StorageManager:
 
     def _init_sqlite_db(self):
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")
         cursor = conn.cursor()
 
         # Dimension Table: dim_persons
@@ -110,6 +111,7 @@ class StorageManager:
         summary: AuditSummary
     ):
         conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")
         cursor = conn.cursor()
 
         for p in persons:
