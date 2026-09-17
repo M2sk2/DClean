@@ -1,6 +1,7 @@
 import re
 from typing import Dict, Any, List, Optional
 
+
 class ParsedName:
     def __init__(
         self,
@@ -8,7 +9,7 @@ class ParsedName:
         first_name: Optional[str] = None,
         father_name: Optional[str] = None,
         family_name: Optional[str] = None,
-        normalized_key: str = ""
+        normalized_key: str = "",
     ):
         self.full_clean = full_clean
         self.first_name = first_name
@@ -22,8 +23,9 @@ class ParsedName:
             "first_name": self.first_name,
             "father_name": self.father_name,
             "family_name": self.family_name,
-            "normalized_key": self.normalized_key
+            "normalized_key": self.normalized_key,
         }
+
 
 class ArabicNameParser:
     """
@@ -32,26 +34,46 @@ class ArabicNameParser:
     theophoric/compound names ('عبد الله', 'سيف الدين', 'آل سعود', 'بن باز', 'أبو بكر')
     so they are not fragmented by naive whitespace splitting.
     """
-    
+
     # Honorifics & titles to strip
     AR_HONORIFICS = re.compile(
         r"^(م\.|د\.|أ\.|أ\.د\.|دكتور|دكتورة|مهندس|مهندسة|أستاذ|أستاذة|الشيخ|المهندس|الدكتور)\s+",
-        re.IGNORECASE
+        re.IGNORECASE,
     )
     EN_HONORIFICS = re.compile(
-        r"^(dr\.|dr|eng\.|eng|prof\.|prof|mr\.|mr|ms\.|ms|mrs\.|mrs)\s+",
-        re.IGNORECASE
+        r"^(dr\.|dr|eng\.|eng|prof\.|prof|mr\.|mr|ms\.|ms|mrs\.|mrs)\s+", re.IGNORECASE
     )
 
     # Prefixes that bond to the next word into a single theophoric token
-    COMPOUND_PREFIXES = {
-        "عبد", "سيف", "نور", "شمس", "علاء", "جمال", "صلاح", "حسام",
-        "تقي", "ضياء", "محي", "عماد", "شرف", "بدر", "نجم"
+    COMPOUND_NAMES = {
+        "نور": {"الهدى", "الدين"},
+        "سيف": {"الدين"},
+        "شمس": {"الدين"},
+        "علاء": {"الدين"},
+        "جمال": {"الدين"},
+        "صلاح": {"الدين"},
+        "حسام": {"الدين"},
+        "تقي": {"الدين"},
+        "ضياء": {"الدين"},
+        "محي": {"الدين"},
+        "عماد": {"الدين"},
+        "شرف": {"الدين"},
+        "بدر": {"الدين"},
+        "نجم": {"الدين"},
     }
 
     # Patronymic and clan particles preserved with space
     PATRONYMIC_PREFIXES = {
-        "آل", "ابن", "بن", "أبو", "ابو", "أبي", "ابي", "أم", "ام", "با"
+        "آل",
+        "ابن",
+        "بن",
+        "أبو",
+        "ابو",
+        "أبي",
+        "ابي",
+        "أم",
+        "ام",
+        "با",
     }
 
     # Diacritics / Harakat regex
@@ -91,13 +113,37 @@ class ArabicNameParser:
             current = tokens[i]
             # Strip harakat from token for check
             check_token = cls.AR_DIACRITICS.sub("", current)
+            
+            if check_token in {"أم", "ام", "أبو", "ابو", "أبي", "ابي"} and i + 2 < n:
+                next_token = tokens[i + 1]
+                next_clean = cls.AR_DIACRITICS.sub("", next_token)
+                third_token = tokens[i + 2]
+                third_clean = cls.AR_DIACRITICS.sub("", third_token)
 
-            # Check if current token is a compound prefix (e.g. 'عبد' + 'الله' -> 'عبدالله')
-            if check_token in cls.COMPOUND_PREFIXES and (i + 1) < n:
+                if next_clean == "عبد" and third_clean in {"الله", "الرحمن", "العزيز"}:
+                    combined = f"{current} {next_token}{third_token}"
+                    bonded.append(combined)
+                    i += 3
+                    continue
+                
+            if check_token == "عبد" and (i + 1) < n:
                 next_token = tokens[i + 1]
                 combined = f"{current}{next_token}"
                 bonded.append(combined)
                 i += 2
+
+            elif check_token in cls.COMPOUND_NAMES and (i + 1) < n:
+                next_token = tokens[i + 1]
+                next_clean = cls.AR_DIACRITICS.sub("", next_token)
+
+                if next_clean in cls.COMPOUND_NAMES[check_token]:
+                    combined = f"{current} {next_token}"
+                    bonded.append(combined)
+                    i += 2
+                else:
+                    bonded.append(current)
+                    i += 1
+
             # Check if current token is a patronymic/clan particle (e.g. 'آل سعود', 'بن باز', 'أبو بكر')
             elif check_token in cls.PATRONYMIC_PREFIXES and (i + 1) < n:
                 next_token = tokens[i + 1]
@@ -128,7 +174,6 @@ class ArabicNameParser:
         s = re.sub(r"ى", "ي", s)
         # Normalize compound spaces for key match (e.g. 'عبد الله' -> 'عبدالله')
         s = re.sub(r"\bعبد\s+", "عبد", s)
-        s = re.sub(r"\bال\s+", "ال", s)
         s = re.sub(r"[^\w\s]", "", s)
         return re.sub(r"\s+", " ", s).strip()
 
@@ -147,7 +192,9 @@ class ArabicNameParser:
         tokens = cls.bond_arabic_tokens(cleaned)
 
         if not tokens:
-            return ParsedName(full_clean=cleaned, normalized_key=cls.normalize_for_matching(cleaned))
+            return ParsedName(
+                full_clean=cleaned, normalized_key=cls.normalize_for_matching(cleaned)
+            )
 
         first = tokens[0]
         father = None
@@ -155,14 +202,21 @@ class ArabicNameParser:
 
         if len(tokens) == 1:
             first = tokens[0]
+
         elif len(tokens) == 2:
             first = tokens[0]
-            family = tokens[1]
+
+            if tokens[1].split()[0] in {"بن", "ابن"}:
+                father = tokens[1]
+            else:
+                family = tokens[1]
+
         elif len(tokens) == 3:
             first = tokens[0]
             father = tokens[1]
             family = tokens[2]
-        else: # 4 or more tokens
+
+        else:  # 4 or more tokens
             first = tokens[0]
             father = " ".join(tokens[1:-1])
             family = tokens[-1]
@@ -175,7 +229,7 @@ class ArabicNameParser:
             first_name=first,
             father_name=father,
             family_name=family,
-            normalized_key=key
+            normalized_key=key,
         )
 
     @classmethod
@@ -200,7 +254,10 @@ class ArabicNameParser:
         tokens = [t.strip().title() for t in cleaned.split() if t.strip()]
 
         if not tokens:
-            return ParsedName(full_clean=cleaned.title(), normalized_key=cls.normalize_for_matching(cleaned))
+            return ParsedName(
+                full_clean=cleaned.title(),
+                normalized_key=cls.normalize_for_matching(cleaned),
+            )
 
         first = tokens[0]
         father = None
@@ -228,7 +285,7 @@ class ArabicNameParser:
             first_name=first,
             father_name=father,
             family_name=family,
-            normalized_key=key
+            normalized_key=key,
         )
 
     @classmethod
