@@ -182,9 +182,9 @@ def main():
     # dashboard command
     subparsers.add_parser("dashboard", help="Launch Streamlit dashboard")
 
-    # If no arguments provided, launch GUI by default
+    # If no arguments provided, display help
     if len(sys.argv) == 1:
-        cmd_gui(None)
+        parser.print_help()
         return
 
     args = parser.parse_args()
