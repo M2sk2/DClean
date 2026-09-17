@@ -46,8 +46,20 @@ def run_headless_clean(file_path: str, contract_path: Optional[str] = None) -> b
     print(f"[DClean] Cleaning file: {file_path}")
     print(f"[DClean] Contract: {contract_path or 'Auto-Detect (Local NLP Classifier)'}")
     
-    runner = PipelineRunner(contract_path=contract_path, db_path=out_db)
-    summary = runner.run(input_file_path=file_path, output_excel_path=out_excel)
+    try:
+        runner = PipelineRunner(contract_path=contract_path, db_path=out_db)
+        summary = runner.run(input_file_path=file_path, output_excel_path=out_excel)
+    except Exception as e:
+        err_msg = f"DClean encountered an error while processing:\n\n{os.path.basename(file_path)}\n\nDetails: {e}"
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("DClean - Processing Error", err_msg)
+        except Exception:
+            print(err_msg)
+        return False
 
     msg = (
         f"DClean Processing Complete!\n\n"
