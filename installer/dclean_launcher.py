@@ -71,22 +71,39 @@ def run_headless_clean(file_path: str, contract_path: Optional[str] = None) -> b
 def launch_dashboard() -> bool:
     """
     Checks if a team dashboard module exists (e.g. dashboard.py or dashboard/app.py).
-    If found, launches it via Streamlit.
+    If found, launches it via Streamlit using a system Python runtime.
     """
     candidates = [
         os.path.join(PROJECT_ROOT, "dashboard.py"),
         os.path.join(PROJECT_ROOT, "dashboard", "app.py"),
         os.path.join(PROJECT_ROOT, "app.py")
     ]
+    target_dashboard = None
     for c in candidates:
         if os.path.exists(c):
-            print(f"[DClean] Found dashboard at {c}. Launching Streamlit...")
-            try:
-                subprocess.run([sys.executable, "-m", "streamlit", "run", c])
+            target_dashboard = c
+            break
+
+    if not target_dashboard:
+        return False
+
+    print(f"[DClean] Found dashboard at {target_dashboard}. Launching Streamlit...")
+
+    # Determine Python executable candidates
+    python_cmds = []
+    if not getattr(sys, "frozen", False):
+        python_cmds.append([sys.executable])
+    python_cmds.extend([["py", "-3"], ["python"], ["py"]])
+
+    for py_cmd in python_cmds:
+        try:
+            cmd = py_cmd + ["-m", "streamlit", "run", target_dashboard]
+            res = subprocess.run(cmd)
+            if res.returncode == 0:
                 return True
-            except Exception as e:
-                print(f"[DClean] Could not start streamlit: {e}")
-                return False
+        except Exception:
+            continue
+
     return False
 
 def launch_desktop_gui(initial_file: Optional[str] = None):
@@ -308,6 +325,14 @@ def launch_desktop_gui(initial_file: Optional[str] = None):
     folder_btn = ttk.Button(btn_frame, text="📁 Open Output Folder", command=open_output_folder, state="disabled")
     folder_btn.pack(side="left", padx=5)
 
+    def open_dashboard_from_gui():
+        res = launch_dashboard()
+        if not res:
+            messagebox.showinfo("DClean", "Could not start Streamlit web studio.\nPlease ensure Python and streamlit are installed on your machine ('pip install streamlit').")
+
+    dash_btn = ttk.Button(btn_frame, text="🌐 Web Studio", command=open_dashboard_from_gui)
+    dash_btn.pack(side="left", padx=5)
+
     close_btn = ttk.Button(btn_frame, text="Close", command=root.destroy)
     close_btn.pack(side="right", padx=5)
 
@@ -318,26 +343,23 @@ def main():
     parser.add_argument("file", nargs="?", default=None, help="Optional raw tabular file to clean immediately")
     parser.add_argument("--contract", "-c", default=None, help="Optional YAML contract path")
     parser.add_argument("--gui", action="store_true", help="Force open desktop GUI window")
-    parser.add_argument("--dashboard", action="store_true", help="Launch Streamlit dashboard if available")
+    parser.add_argument("--dashboard", action="store_true", help="Launch Streamlit web dashboard")
 
     args = parser.parse_args()
 
-    # 1. If dashboard explicitly requested, try launching it
+    # 1. If dashboard explicitly requested via --dashboard flag
     if args.dashboard:
         if launch_dashboard():
             return
+        print("[DClean] Streamlit dashboard could not be started. Falling back to desktop GUI...")
 
-    # 2. If a file was passed as argument (e.g. from Windows Explorer context menu)
+    # 2. If a file was passed as argument without --gui (e.g. from Windows Explorer context menu)
     if args.file and not args.gui:
         success = run_headless_clean(args.file, contract_path=args.contract)
         sys.exit(0 if success else 1)
 
-    # 3. If dashboard exists and GUI not explicitly forced, launch dashboard
-    if not args.gui:
-        if launch_dashboard():
-            return
-
-    # 4. Fallback to native lightweight desktop GUI
+    # 3. Default interactive mode (desktop icon, Start Menu, or double-click):
+    # Launch the native responsive desktop GUI Studio!
     launch_desktop_gui(initial_file=args.file)
 
 if __name__ == "__main__":
