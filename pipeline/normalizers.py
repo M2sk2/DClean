@@ -186,6 +186,7 @@ class CategoricalNormalizer:
         """
         Normalize the lookup key without changing the canonical value.
         """
+
         if value is None:
             return ""
 
@@ -197,6 +198,9 @@ class CategoricalNormalizer:
         # Normalize common Arabic letter variations
         key = re.sub(r"[إأآا]", "ا", key)
         key = key.replace("ى", "ي")
+
+        # Normalize Arabic taa marbuta / haa variations
+        key = key.replace("ة", "ه")
 
         # Normalize repeated whitespace
         key = re.sub(r"\s+", " ", key)

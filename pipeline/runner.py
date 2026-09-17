@@ -286,8 +286,9 @@ class PipelineRunner:
 
                 # 5. Deterministic Normalization for Structured & Categorical fields
                 clean_uni = CategoricalNormalizer.normalize_university(canon_data.get("university"))
+                clean_college = CategoricalNormalizer.normalize_college(canon_data.get("college"))
                 clean_academic = CategoricalNormalizer.normalize_academic_level(canon_data.get("academic_lvl"))
-                clean_major = str(canon_data.get("major")).strip() if canon_data.get("major") else None
+                clean_major = CategoricalNormalizer.normalize_major(canon_data.get("major"))
                 clean_timestamp = DateTimeNormalizer.normalize(canon_data.get("registered_at"))
 
                 consent = CategoricalNormalizer.parse_boolean(canon_data.get("consent_photo"))
@@ -334,6 +335,10 @@ class PipelineRunner:
                         clean_row[raw_col] = clean_academic
                     elif canon_target == "university" and clean_uni:
                         clean_row[raw_col] = clean_uni
+                    elif canon_target == "college" and clean_college:
+                        clean_row[raw_col] = clean_college
+                    elif canon_target == "major" and clean_major:
+                        clean_row[raw_col] = clean_major
                     elif canon_target == "student_id" and clean_row.get(raw_col) is not None:
                         val_s = str(clean_row[raw_col]).strip()
                         if val_s.endswith(".0"):

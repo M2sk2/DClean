@@ -67,8 +67,6 @@ canonical_mappings:
       - "Major"
       - "التخصص"
       - "القسم"
-      - "College"
-      - "الكلية"
       - "Specialization"
     required: false
     transformers: ["strip", "canonical_major"]
