@@ -2,6 +2,12 @@ import re
 from datetime import datetime, timezone, timedelta
 from typing import Any, Optional, Dict, List, Set
 import phonenumbers
+from pipeline.lookup_data import (
+    COLLEGE_LOOKUP,
+    UNIVERSITY_LOOKUP,
+    ACADEMIC_LEVEL_LOOKUP,
+    MAJOR_LOOKUP,
+)
 
 class PhoneNormalizer:
     """
@@ -175,83 +181,55 @@ class CategoricalNormalizer:
     TRUE_VALUES = {"نعم", "موافق", "أوافق", "yes", "true", "1", "حضر", "حاضر", "attended", "present"}
     FALSE_VALUES = {"لا", "غير موافق", "no", "false", "0", "غائب", "لم يحضر", "absent"}
 
-    # Saudi Higher Education Native Vocabulary
-    ACADEMIC_LOOKUP = {
-        "تحضيري": "سنة تحضيرية",
-        "سنة تحضيرية": "سنة تحضيرية",
-        "prep": "سنة تحضيرية",
-        
-        "1": "بكالوريوس - سنة 1",
-        "1.0": "بكالوريوس - سنة 1",
-        "سنة أولى": "بكالوريوس - سنة 1",
-        "سنة 1": "بكالوريوس - سنة 1",
-        "مستوى 1": "بكالوريوس - سنة 1",
-        "مستوى 2": "بكالوريوس - سنة 1",
-        "freshman": "بكالوريوس - سنة 1",
-        
-        "2": "بكالوريوس - سنة 2",
-        "2.0": "بكالوريوس - سنة 2",
-        "سنة ثانية": "بكالوريوس - سنة 2",
-        "سنة 2": "بكالوريوس - سنة 2",
-        "مستوى 3": "بكالوريوس - سنة 2",
-        "مستوى 4": "بكالوريوس - سنة 2",
-        "مستوى رابع": "بكالوريوس - سنة 2",
-        "sophomore": "بكالوريوس - سنة 2",
-        
-        "3": "بكالوريوس - سنة 3",
-        "3.0": "بكالوريوس - سنة 3",
-        "سنة ثالثة": "بكالوريوس - سنة 3",
-        "سنة 3": "بكالوريوس - سنة 3",
-        "مستوى 5": "بكالوريوس - سنة 3",
-        "مستوى 6": "بكالوريوس - سنة 3",
-        "junior": "بكالوريوس - سنة 3",
-        
-        "4": "بكالوريوس - سنة 4",
-        "4.0": "بكالوريوس - سنة 4",
-        "سنة رابعة": "بكالوريوس - سنة 4",
-        "سنة 4": "بكالوريوس - سنة 4",
-        "مستوى 7": "بكالوريوس - سنة 4",
-        "مستوى 8": "بكالوريوس - سنة 4",
-        "senior": "بكالوريوس - سنة 4",
-        
-        "5": "بكالوريوس - سنة 5",
-        "5.0": "بكالوريوس - سنة 5",
-        "سنة خامسة": "بكالوريوس - سنة 5",
-        "سنة 5": "بكالوريوس - سنة 5",
-        
-        "امتياز": "سنة امتياز",
-        "سنة امتياز": "سنة امتياز",
-        "خريج": "خريج",
-        "graduate": "خريج",
-        "ماجستير": "ماجستير",
-        "دراسات عليا": "ماجستير",
-        "master": "ماجستير",
-        "دكتوراه": "دكتوراه",
-        "phd": "دكتوراه"
-    }
+    @staticmethod
+    def normalize_lookup_key(value: Any) -> str:
+        """
+        Normalize the lookup key without changing the canonical value.
+        """
+        if value is None:
+            return ""
 
-    UNI_LOOKUP = {
-        "ksu": "جامعة الملك سعود",
-        "جامعة الملك سعود": "جامعة الملك سعود",
-        "king saud university": "جامعة الملك سعود",
-        "king saud univ": "جامعة الملك سعود",
-        "pnu": "جامعة الأميرة نورة",
-        "جامعة الأميرة نورة": "جامعة الأميرة نورة",
-        "جامعة الأميرة نورة بنت عبدالرحمن": "جامعة الأميرة نورة",
-        "kfupm": "جامعة الملك فهد للبترول والمعادن",
-        "جامعة الملك فهد": "جامعة الملك فهد للبترول والمعادن",
-        "جامعة الملك فهد للبترول والمعادن": "جامعة الملك فهد للبترول والمعادن",
-        "imsiu": "جامعة الإمام محمد بن سعود الإسلامية",
-        "جامعة الإمام": "جامعة الإمام محمد بن سعود الإسلامية",
-        "جامعة الإمام محمد بن سعود الإسلامية": "جامعة الإمام محمد بن سعود الإسلامية",
-        "kau": "جامعة الملك عبدالعزيز",
-        "جامعة الملك عبدالعزيز": "جامعة الملك عبدالعزيز",
-        "iau": "جامعة الإمام عبدالرحمن بن فيصل",
-        "جامعة الإمام عبدالرحمن بن فيصل": "جامعة الإمام عبدالرحمن بن فيصل",
-        "uj": "جامعة جدة",
-        "university of jeddah": "جامعة جدة",
-        "جامعة جدة": "جامعة جدة"
-    }
+        key = str(value).strip().lower()
+
+        # Remove Arabic diacritics
+        key = re.sub(r"[\u064B-\u065F\u0670\u0640]", "", key)
+
+        # Normalize common Arabic letter variations
+        key = re.sub(r"[إأآا]", "ا", key)
+        key = key.replace("ى", "ي")
+
+        # Normalize repeated whitespace
+        key = re.sub(r"\s+", " ", key)
+
+        return key.strip()
+    
+    @classmethod
+    def normalize_lookup(
+        cls,
+        raw_val: Any,
+        lookup: Dict[str, str]
+    ) -> Optional[str]:
+        """
+        Generic deterministic normalization using an explicit lookup table.
+
+        Unknown values are preserved instead of being guessed or invented.
+        """
+        if raw_val is None:
+            return None
+
+        val_str = str(raw_val).strip()
+
+        if not val_str or val_str.lower() in ["none", "nan", "null", "n/a"]:
+            return None
+
+        key = cls.normalize_lookup_key(val_str)
+
+        normalized_lookup = {
+            cls.normalize_lookup_key(k): v
+            for k, v in lookup.items()
+        }
+
+        return normalized_lookup.get(key, val_str)
 
     @classmethod
     def parse_boolean(cls, raw_val: Any) -> Optional[bool]:
@@ -293,41 +271,29 @@ class CategoricalNormalizer:
 
     @classmethod
     def normalize_academic_level(cls, raw_val: Any) -> Optional[str]:
-        """
-        Normalizes academic level against native Saudi terminology.
-        If non-standard (e.g. 'طالب زائر' or 'طالب موهبة بالثانوي'),
-        preserves trimmed original string without pseudo-normalization hallucination!
-        """
         if raw_val is None:
             return None
-        if isinstance(raw_val, float):
-            try:
-                raw_val = int(raw_val)
-            except (ValueError, OverflowError):
-                pass
-        val_str = str(raw_val).strip()
-        if not val_str or val_str.lower() in ["none", "nan", "null"]:
+
+        value = str(raw_val).strip()
+
+        if not value:
             return None
 
-        key = val_str.lower()
-        # Direct lookup
-        if key in cls.ACADEMIC_LOOKUP:
-            return cls.ACADEMIC_LOOKUP[key]
+        # Handle Excel-style numeric values such as 1.0
+        if value.endswith(".0"):
+            value = value[:-2]
 
-        # Partial matching against canonical terms
-        for k, canon in cls.ACADEMIC_LOOKUP.items():
-            if k in key:
-                return canon
+        return cls.normalize_lookup(value, ACADEMIC_LEVEL_LOOKUP)
+    
+    @classmethod
+    def normalize_college(cls, raw_val: Any) -> Optional[str]:
+        return cls.normalize_lookup(raw_val, COLLEGE_LOOKUP)
 
-        # Fallback to pristine trimmed string: zero loss of meaning, zero hallucination!
-        return val_str
-
+    
     @classmethod
     def normalize_university(cls, raw_val: Any) -> Optional[str]:
-        if raw_val is None:
-            return None
-        val_str = str(raw_val).strip()
-        if not val_str or val_str.lower() in ["none", "nan", "null"]:
-            return None
-        key = val_str.lower()
-        return cls.UNI_LOOKUP.get(key, val_str)
+        return cls.normalize_lookup(raw_val, UNIVERSITY_LOOKUP)
+    
+    @classmethod
+    def normalize_major(cls, raw_val: Any) -> Optional[str]:
+        return cls.normalize_lookup(raw_val, MAJOR_LOOKUP)
