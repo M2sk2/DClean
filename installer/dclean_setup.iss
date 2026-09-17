@@ -52,17 +52,34 @@ Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\installer\assets\dclean_icon.ico"; Tasks: desktopicon
 
 [Registry]
-; Context menu for .xlsx
+; Universal context menu with file extension filter (works across Windows 10 & 11)
+Root: HKCU; Subkey: "Software\Classes\*\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\*\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\*\shell\DClean"; ValueType: string; ValueName: "AppliesTo"; ValueData: "System.FileExtension:=.xlsx OR System.FileExtension:=.csv OR System.FileExtension:=.xlsm"; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\*\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
+
+; Excel ProgID associations (ensures direct appearance when Excel is installed)
+Root: HKCU; Subkey: "Software\Classes\Excel.Sheet.12\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.Sheet.12\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.Sheet.12\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
+
+Root: HKCU; Subkey: "Software\Classes\Excel.CSV\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.CSV\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.CSV\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
+
+Root: HKCU; Subkey: "Software\Classes\Excel.SheetMacroEnabled.12\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.SheetMacroEnabled.12\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\Excel.SheetMacroEnabled.12\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
+
+; SystemFileAssociations (.xlsx, .csv, .xlsm)
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsx\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsx\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsx\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
 
-; Context menu for .csv
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.csv\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.csv\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.csv\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
 
-; Context menu for .xlsm
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsm\shell\DClean"; ValueType: string; ValueName: ""; ValueData: "Clean with DClean"; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsm\shell\DClean"; ValueType: string; ValueName: "Icon"; ValueData: """{app}\installer\assets\dclean_icon.ico"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.xlsm\shell\DClean\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: contextmenu
