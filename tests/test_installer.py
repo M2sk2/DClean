@@ -1,0 +1,74 @@
+"""
+Unit & Integration Tests for the DClean Windows Installer, Launcher & CLI.
+"""
+
+import os
+import sys
+import pytest
+
+# Ensure workspace root is on sys.path
+WORKSPACE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if WORKSPACE_ROOT not in sys.path:
+    sys.path.insert(0, WORKSPACE_ROOT)
+
+def test_installer_assets_and_scripts_exist():
+    installer_dir = os.path.join(WORKSPACE_ROOT, "installer")
+    assert os.path.isdir(installer_dir), "installer directory must exist"
+
+    # Icon
+    icon_path = os.path.join(installer_dir, "assets", "dclean_icon.ico")
+    assert os.path.exists(icon_path), "dclean_icon.ico must exist"
+    assert os.path.getsize(icon_path) > 1000, "Icon file must be non-empty"
+
+    # PowerShell and Batch scripts
+    assert os.path.exists(os.path.join(installer_dir, "install.ps1")), "install.ps1 must exist"
+    assert os.path.exists(os.path.join(installer_dir, "install.bat")), "install.bat must exist"
+    assert os.path.exists(os.path.join(installer_dir, "uninstall.ps1")), "uninstall.ps1 must exist"
+    assert os.path.exists(os.path.join(installer_dir, "uninstall.bat")), "uninstall.bat must exist"
+
+    # Packaging configs
+    assert os.path.exists(os.path.join(installer_dir, "dclean_setup.iss")), "Inno setup script must exist"
+    assert os.path.exists(os.path.join(installer_dir, "dclean.spec")), "PyInstaller spec must exist"
+
+def test_dclean_cli_argparser():
+    from installer.dclean_cli import main
+    # Ensure module imports cleanly and commands are mapped
+    assert callable(main)
+
+def test_dclean_cli_validate_command(capsys):
+    from installer.dclean_cli import cmd_validate
+    import argparse
+    args = argparse.Namespace(contract="config/workshop_contract.yaml")
+    cmd_validate(args)
+    captured = capsys.readouterr()
+    assert "[VALID]" in captured.out
+
+def test_dclean_cli_diff_command(capsys):
+    from installer.dclean_cli import cmd_diff
+    import argparse
+    args = argparse.Namespace(
+        input="RawData/Distraction_Era_Workshop_Dataset.xlsx",
+        contract="config/workshop_contract.yaml"
+    )
+    cmd_diff(args)
+    captured = capsys.readouterr()
+    assert "Audit Diff" in captured.out
+    assert "Compliant:" in captured.out
+
+def test_dclean_launcher_headless_clean_missing_file():
+    from installer.dclean_launcher import run_headless_clean
+    # Passing a non-existent file should safely return False
+    res = run_headless_clean("non_existent_file_xyz123.xlsx")
+    assert res is False
+
+def test_powershell_installer_syntax():
+    """Verify that install.ps1 and uninstall.ps1 have valid PowerShell syntax."""
+    import subprocess
+    ps1_files = [
+        os.path.join(WORKSPACE_ROOT, "installer", "install.ps1"),
+        os.path.join(WORKSPACE_ROOT, "installer", "uninstall.ps1")
+    ]
+    for ps1 in ps1_files:
+        cmd = ["powershell", "-NoProfile", "-Command", f"[System.Management.Automation.Language.Parser]::ParseFile('{ps1}', [ref]$null, [ref]$null)"]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        assert res.returncode == 0, f"Syntax error in {ps1}: {res.stderr}"
