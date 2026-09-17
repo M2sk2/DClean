@@ -66,23 +66,36 @@ A high-performance, generalized ETL pipeline designed for bilingual (Arabic & En
 
 ---
 
-## Quickstart
+## Quickstart & Windows Installation
 
-### 1. Installation
+### Option 1: One-Click Windows Setup (Zero Admin Rights Needed)
+Double-click [`installer/install.bat`](installer/install.bat) or run in PowerShell:
+```powershell
+powershell -ExecutionPolicy Bypass -File installer/install.ps1
+```
+- Installs to `%LocalAppData%\Programs\DClean`.
+- Generates Desktop and Start Menu shortcuts with app icon.
+- Adds `dclean` to your system `PATH` for terminal access.
+- Adds **"Clean with DClean"** right-click context menu to `.xlsx`, `.csv`, and `.xlsm` files.
+- To uninstall anytime: run [`installer/uninstall.bat`](installer/uninstall.bat).
+
+### Option 2: Desktop GUI Studio
+Launch DClean anytime via your Desktop shortcut or run:
+```powershell
+dclean gui
+# or
+py installer/dclean_launcher.py
+```
+
+### Option 3: Standard Terminal CLI
 ```powershell
 py -m pip install -r requirements.txt
-```
 
-### 2. Clean Datasets (CLI)
+# Run with auto-detected schema (Local NLP sequence classifier)
+dclean clean -i "RawData/Distraction_Era_Workshop_Dataset.xlsx"
 
-**Run with Auto-Detected Schema (Dynamic NLP Classifier)**:
-```powershell
-py -m pipeline.cli -i "RawData/Distraction_Era_Workshop_Dataset.xlsx"
-```
-
-**Run with an Explicit Declarative Contract**:
-```powershell
-py -m pipeline.cli -i "RawData/Developers_Committee_2026_Responses.xlsx" -c "config/developers_committee_contract.yaml"
+# Run with an explicit declarative contract
+dclean clean -i "RawData/Developers_Committee_2026_Responses.xlsx" -c "config/developers_committee_contract.yaml"
 ```
 
 ### 3. Contract Tools (Validation, Diffing, Generation)
