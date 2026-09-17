@@ -11,9 +11,9 @@ This report documents the verification, model benchmarking, and end-to-end integ
 ## 1. Automated Test Suite Summary (65 Tests, 100% Pass)
 
 The test suite executed with `py -m pytest -v`:
-- **Total Tests**: 65
-- **Passed**: 65 (100%)
-- **Execution Time**: ~2.5s on pure CPU
+- **Total Tests**: 71
+- **Passed**: 71 (100%)
+- **Execution Time**: ~2.8s on pure CPU
 
 ### Test Module Breakdown
 
@@ -22,6 +22,7 @@ The test suite executed with `py -m pytest -v`:
 | [**`tests/test_contract_engine.py`**](tests/test_contract_engine.py) | 18 | Declarative schema resolution, deterministic MD5 slugification, alias & exact header mapping, semantic heuristics, duplicate mapping safety, unmapped column preservation | **PASSED** |
 | [**`tests/test_enhanced_contractor.py`**](tests/test_enhanced_contractor.py) | 31 | Typo-tolerant fuzzy matching (`difflib`), deep sample heuristics (Saudi phone, email, student ID, LinkedIn, academic level), confidence scoring, contract validation & diffing, CLI commands (`validate`, `diff`, `generate`), trained multiclass NLP classifier | **PASSED** |
 | [**`tests/test_pipeline.py`**](tests/test_pipeline.py) | 16 | Theophoric Arabic name bonding, patronymic clan particles, inverted English names, Excel phone bug recovery, email typo healing, datetime serial conversion, native Saudi academic levels, deterministic UUIDv5, multi-sheet cross-dedup, Jaro-Winkler entity similarity, registration event merging, SQLite foreign key constraint enforcement | **PASSED** |
+| [**`tests/test_installer.py`**](tests/test_installer.py) | 6 | Installer assets, icon verification, PowerShell syntax validation, unified `dclean` CLI command dispatching, launcher headless cleaning, context menu safety | **PASSED** |
 
 ---
 
