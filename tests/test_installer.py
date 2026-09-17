@@ -72,3 +72,20 @@ def test_powershell_installer_syntax():
         cmd = ["powershell", "-NoProfile", "-Command", f"[System.Management.Automation.Language.Parser]::ParseFile('{ps1}', [ref]$null, [ref]$null)"]
         res = subprocess.run(cmd, capture_output=True, text=True)
         assert res.returncode == 0, f"Syntax error in {ps1}: {res.stderr}"
+
+def test_dashboard_file_syntax_and_runner_connection():
+    """Verify dashboard.py has valid syntax and references PipelineRunner correctly."""
+    import ast
+    dashboard_path = os.path.join(WORKSPACE_ROOT, "dashboard.py")
+    assert os.path.exists(dashboard_path), "dashboard.py must exist in root directory"
+    with open(dashboard_path, "r", encoding="utf-8") as f:
+        tree = ast.parse(f.read(), filename="dashboard.py")
+    assert tree is not None
+    # Check that PipelineRunner is imported
+    imported_names = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                imported_names.append(alias.name)
+    assert "PipelineRunner" in imported_names, "dashboard.py must import PipelineRunner"
+

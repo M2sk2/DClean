@@ -223,10 +223,40 @@ if uploaded_file is not None:
         st.info("Preview unavailable. The pipeline can still process the file.")
 
     # -----------------------------------------------------
+    # CONTRACT STRATEGY SELECTION
+    # -----------------------------------------------------
+    st.markdown(
+        '<div class="section-title">03 — Schema Contract Strategy</div>',
+        unsafe_allow_html=True
+    )
+
+    config_dir = "config"
+    available_contracts = []
+    if os.path.exists(config_dir):
+        available_contracts = [f for f in os.listdir(config_dir) if f.endswith(".yaml") or f.endswith(".yml")]
+
+    strategy_col1, strategy_col2 = st.columns([1, 1])
+    with strategy_col1:
+        strategy = st.radio(
+            "Select Schema Strategy",
+            options=["Auto-Detect (Local AI/NLP Classifier)", "Declarative YAML Contract"],
+            label_visibility="collapsed"
+        )
+
+    selected_contract_path = None
+    with strategy_col2:
+        if strategy == "Declarative YAML Contract":
+            if available_contracts:
+                chosen_contract = st.selectbox("Choose Contract Schema", available_contracts)
+                selected_contract_path = os.path.join(config_dir, chosen_contract)
+            else:
+                st.info("No YAML contracts found in config/. Defaulting to Auto-Detect.")
+
+    # -----------------------------------------------------
     # CLEANING
     # -----------------------------------------------------
     st.markdown(
-        '<div class="section-title">03 — Run Cleaning Pipeline</div>',
+        '<div class="section-title">04 — Run Cleaning Pipeline</div>',
         unsafe_allow_html=True
     )
 
@@ -243,8 +273,10 @@ if uploaded_file is not None:
 
     if run_button:
 
-        try:
+        temp_dir = tempfile.mkdtemp()
+        input_path = os.path.join(temp_dir, uploaded_file.name)
 
+        try:
             # Progress display
             progress = st.progress(0)
             status_text = st.empty()
@@ -252,15 +284,8 @@ if uploaded_file is not None:
             status_text.write("Reading dataset...")
             progress.progress(15)
 
-            suffix = os.path.splitext(uploaded_file.name)[1]
-
-            with tempfile.NamedTemporaryFile(
-                delete=False,
-                suffix=suffix
-            ) as temp_file:
-
-                temp_file.write(uploaded_file.getbuffer())
-                input_path = temp_file.name
+            with open(input_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
 
             os.makedirs("CleanData", exist_ok=True)
 
@@ -280,7 +305,7 @@ if uploaded_file is not None:
             progress.progress(30)
 
             runner = PipelineRunner(
-                contract_path=None,
+                contract_path=selected_contract_path,
                 db_path=db_path
             )
 
@@ -311,7 +336,7 @@ if uploaded_file is not None:
             # =================================================
             st.markdown(
                 '<div class="section-title">'
-                '04 — Cleaning Results'
+                '05 — Cleaning Results'
                 '</div>',
                 unsafe_allow_html=True
             )
@@ -356,62 +381,78 @@ if uploaded_file is not None:
             )
 
             # =================================================
-            # CLEANED DATA PREVIEW
+            # DATA PREVIEWS (Cleaned vs Quarantined)
             # =================================================
             if os.path.exists(output_excel):
 
                 st.markdown(
                     '<div class="section-title">'
-                    '05 — Cleaned Dataset'
+                    '06 — Output Inspection'
                     '</div>',
                     unsafe_allow_html=True
                 )
 
-                try:
+                tab_clean, tab_quarantine = st.tabs([
+                    f"✓ Cleaned Dataset ({summary.valid_rows} rows)",
+                    f"⚠️ Quarantined Store ({summary.quarantined_rows} rows)"
+                ])
 
-                    cleaned_preview = pd.read_excel(
-                        output_excel
-                    )
+                with tab_clean:
+                    try:
+                        cleaned_preview = pd.read_excel(output_excel, sheet_name=0)
+                        st.dataframe(cleaned_preview.head(50), use_container_width=True)
+                    except Exception:
+                        st.info("Cleaned data preview unavailable.")
 
-                    with st.expander(
-                        "View cleaned data preview",
-                        expanded=True
-                    ):
-
-                        st.dataframe(
-                            cleaned_preview.head(30),
-                            use_container_width=True
-                        )
-
-                except Exception:
-                    pass
+                with tab_quarantine:
+                    if summary.quarantined_rows > 0:
+                        try:
+                            quarantine_preview = pd.read_excel(output_excel, sheet_name="quarantine_records")
+                            st.dataframe(quarantine_preview, use_container_width=True)
+                        except Exception:
+                            st.info("No quarantine sheet found.")
+                    else:
+                        st.success("Zero records were quarantined. All records met contract assertions!")
 
                 # =================================================
-                # DOWNLOAD
+                # EXPORT DOWNLOADS
                 # =================================================
                 st.markdown(
                     '<div class="section-title">'
-                    '06 — Export Results'
+                    '07 — Export Results'
                     '</div>',
                     unsafe_allow_html=True
                 )
 
                 st.caption(
-                    "Your cleaned dataset is ready for export."
+                    "Download your cleaned Excel workbook or SQLite relational database."
                 )
 
-                with open(output_excel, "rb") as cleaned_file:
+                d_col1, d_col2 = st.columns(2)
 
-                    st.download_button(
-                        label="↓ Download Cleaned Dataset",
-                        data=cleaned_file.read(),
-                        file_name=f"{base_name}_Cleaned.xlsx",
-                        mime=(
-                            "application/vnd.openxmlformats-"
-                            "officedocument.spreadsheetml.sheet"
-                        ),
-                        use_container_width=True
-                    )
+                with d_col1:
+                    with open(output_excel, "rb") as cleaned_file:
+                        st.download_button(
+                            label="↓ Download Cleaned Excel (.xlsx)",
+                            data=cleaned_file.read(),
+                            file_name=f"{base_name}_Cleaned.xlsx",
+                            mime=(
+                                "application/vnd.openxmlformats-"
+                                "officedocument.spreadsheetml.sheet"
+                            ),
+                            use_container_width=True
+                        )
+
+                with d_col2:
+                    if os.path.exists(db_path):
+                        with open(db_path, "rb") as db_file:
+                            st.download_button(
+                                label="↓ Download SQLite Database (.db)",
+                                data=db_file.read(),
+                                file_name=f"{base_name}_database.db",
+                                mime="application/x-sqlite3",
+                                use_container_width=True
+                            )
 
         except Exception as error:
 
@@ -420,6 +461,10 @@ if uploaded_file is not None:
             )
 
             st.exception(error)
+
+        finally:
+            import shutil
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 # =========================================================
