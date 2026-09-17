@@ -109,7 +109,9 @@ class ContractEngine:
                     matched_field = "expectations"
                 elif any(k in norm_h for k in ["photograph", "تصوير", "تغطية إعلامية", "تغطيه اعلاميه"]):
                     matched_field = "consent_photo"
-                elif any(k in norm_h for k in ["college", "كلية", "major", "تخصص", "قسم"]):
+                elif any(k in norm_h for k in ["college", "كلية"]):
+                    matched_field = "college"
+                elif any(k in norm_h for k in ["major", "تخصص", "قسم"]):
                     matched_field = "major"
                 elif any(k in norm_h for k in ["academic", "مستوى", "سنة دراسية", "level"]):
                     matched_field = "academic_lvl"
