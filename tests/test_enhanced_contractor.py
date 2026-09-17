@@ -257,6 +257,28 @@ def test_transformer_nlp_assistant_defaults():
     assert res["group"] == "Free-Form"
     assert res["detection_source"] == "transformer_nlp"
 
+def test_trained_model_multiclass_inference():
+    nlp = TransformerNLPAssistant()
+    assert nlp.sklearn_pipeline is not None, "Trained scikit-learn model should be loaded"
+
+    # Identity
+    id_res = nlp.classify_column("رقم الجوال", sample_values=["0551234567"])
+    assert id_res["group"] == "Identity"
+    assert id_res["confidence"] > 0.80
+
+    # Structured/MetaData
+    meta_res = nlp.classify_column("السنة الدراسية", sample_values=["سنة ثالثة"])
+    assert meta_res["group"] == "Structured/MetaData"
+
+    # Categorical/MultiSelect
+    cat_res = nlp.classify_column("هل توافق على الشروط والأحكام؟", sample_values=["نعم", "لا"])
+    assert cat_res["group"] == "Categorical/MultiSelect"
+
+    # Free-Form
+    free_res = nlp.classify_column("لماذا ترغب بالانضمام إلى هذا المعسكر؟", sample_values=["لتطوير مهاراتي في هندسة البيانات"])
+    assert free_res["group"] == "Free-Form"
+    assert free_res["confidence"] > 0.85
+
 # =====================================================================
 # 7. Fuzzy Boundary & Arabic Variations Stress Tests
 # =====================================================================

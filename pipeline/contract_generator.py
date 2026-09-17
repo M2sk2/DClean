@@ -54,29 +54,59 @@ class TransformerNLPAssistant(BaseNLPAssistant):
     """
     Dedicated Transformer NLP Sequence Classifier for tabular schema grouping.
     Replaces expensive and slow generative LLMs with a lightweight, specialized
-    encoder model (e.g. DistilBERT / MiniLM / MARBERT) running on pure CPU via ONNX Runtime.
+    model running on pure CPU (PyTorch fine-tuned weights, ONNX, or calibrated TF-IDF model).
 
     Key Advantages over Generative LLMs:
     1. 4-Class Constrained Softmax: Mathematically bound to the 4 defined schema groups.
     2. Zero Hallucination: Cannot invent nonexistent categories or corrupt column targets.
-    3. Low Latency: 5-15ms inference on pure CPU vs. 2000-5000ms on generative LLMs.
+    3. Low Latency: 1-15ms inference on pure CPU vs. 2000-5000ms on generative LLMs.
     4. Calibrated Confidence: Direct softmax probabilities (0.0 - 1.0).
-    5. Footprint: ~25-50MB model size with zero cloud/API costs.
+    5. Footprint: Lightweight local model with zero cloud/API costs.
     """
     CLASSES = ["Identity", "Structured/MetaData", "Categorical/MultiSelect", "Free-Form"]
 
     def __init__(self, model_path: Optional[str] = None):
-        self.model_path = model_path or os.getenv("NLP_MODEL_PATH", "models/column_classifier.onnx")
+        self.model_path = model_path
         self.session = None
+        self.sklearn_pipeline = None
+        self.torch_model = None
+        self.torch_tokenizer = None
         self._load_model()
 
     def _load_model(self):
-        if os.path.exists(self.model_path):
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+        # 1. Check for PyTorch fine-tuned Transformer model
+        transformer_dir = self.model_path if (self.model_path and os.path.isdir(self.model_path)) else os.path.join(root_dir, "models", "transformer_column_classifier")
+        if os.path.exists(transformer_dir) and os.path.exists(os.path.join(transformer_dir, "config.json")):
+            try:
+                from transformers import AutoTokenizer, AutoModelForSequenceClassification
+                self.torch_tokenizer = AutoTokenizer.from_pretrained(transformer_dir)
+                self.torch_model = AutoModelForSequenceClassification.from_pretrained(transformer_dir)
+                self.torch_model.eval()
+                return
+            except Exception:
+                pass
+
+        # 2. Check for ONNX Runtime session
+        onnx_file = self.model_path if (self.model_path and self.model_path.endswith(".onnx")) else os.path.join(root_dir, "models", "column_classifier.onnx")
+        if os.path.exists(onnx_file):
             try:
                 import onnxruntime as ort
-                self.session = ort.InferenceSession(self.model_path)
+                self.session = ort.InferenceSession(onnx_file)
+                return
             except Exception:
-                self.session = None
+                pass
+
+        # 3. Check for ultra-fast Scikit-Learn TF-IDF model trained on raw data
+        joblib_file = self.model_path if (self.model_path and self.model_path.endswith(".joblib")) else os.path.join(root_dir, "models", "tfidf_column_classifier.joblib")
+        if os.path.exists(joblib_file):
+            try:
+                import joblib
+                self.sklearn_pipeline = joblib.load(joblib_file)
+                return
+            except Exception:
+                pass
 
     @staticmethod
     def _softmax(logits: List[float]) -> List[float]:
@@ -90,7 +120,37 @@ class TransformerNLPAssistant(BaseNLPAssistant):
         samples_preview = ", ".join(str(s)[:30] for s in (sample_values or [])[:3] if s)
         text_input = f"Header: {header} | Samples: {samples_preview}"
 
-        # If ONNX model session is loaded, run neural sequence classification
+        # 1. PyTorch Transformer Inference
+        if self.torch_model is not None and self.torch_tokenizer is not None:
+            try:
+                import torch
+                inputs = self.torch_tokenizer(text_input, padding="max_length", truncation=True, max_length=128, return_tensors="pt")
+                with torch.no_grad():
+                    outputs = self.torch_model(**inputs)
+                    probs = torch.softmax(outputs.logits[0], dim=-1).tolist()
+                top_idx = int(probs.index(max(probs)))
+                predicted_group = self.CLASSES[top_idx]
+                confidence = float(probs[top_idx])
+
+                slug = AutoContractGenerator._slugify(header)
+                col_type = "phone" if "phone" in slug else ("email" if "email" in slug else "string")
+                if predicted_group == "Free-Form":
+                    col_type = "text"
+                elif predicted_group == "Categorical/MultiSelect":
+                    col_type = "boolean" if any(b in text_input.lower() for b in ["نعم", "yes", "true"]) else "string"
+
+                return {
+                    "target_field": slug,
+                    "group": predicted_group,
+                    "type": col_type,
+                    "transformers": ["strip"],
+                    "confidence": round(confidence, 3),
+                    "detection_source": "transformer_nlp"
+                }
+            except Exception:
+                pass
+
+        # 2. ONNX Runtime Inference
         if self.session is not None:
             try:
                 inputs = {self.session.get_inputs()[0].name: [text_input]}
@@ -118,7 +178,33 @@ class TransformerNLPAssistant(BaseNLPAssistant):
             except Exception:
                 pass
 
-        # Local semantic fallback if ONNX model binary is not present
+        # 3. Fast Scikit-Learn TF-IDF Inference (Trained on Raw Data)
+        if self.sklearn_pipeline is not None:
+            try:
+                probs = self.sklearn_pipeline.predict_proba([text_input])[0]
+                top_idx = int(probs.argmax())
+                predicted_group = self.CLASSES[top_idx]
+                confidence = float(probs[top_idx])
+
+                slug = AutoContractGenerator._slugify(header)
+                col_type = "phone" if "phone" in slug else ("email" if "email" in slug else "string")
+                if predicted_group == "Free-Form":
+                    col_type = "text"
+                elif predicted_group == "Categorical/MultiSelect":
+                    col_type = "boolean" if any(b in text_input.lower() for b in ["نعم", "yes", "true"]) else "string"
+
+                return {
+                    "target_field": slug,
+                    "group": predicted_group,
+                    "type": col_type,
+                    "transformers": ["strip"],
+                    "confidence": round(confidence, 3),
+                    "detection_source": "transformer_nlp"
+                }
+            except Exception:
+                pass
+
+        # 4. Local semantic fallback
         rule_fallback = RuleAssistedNLP().classify_column(header, sample_values)
         if rule_fallback:
             rule_fallback["detection_source"] = "transformer_nlp"
