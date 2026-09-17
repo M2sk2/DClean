@@ -12,6 +12,12 @@ import argparse
 import subprocess
 from typing import Optional
 
+# Force Streamlit to production mode (prevents developmentMode from defaulting to True in PyInstaller)
+os.environ["STREAMLIT_GLOBAL_DEVELOPMENT_MODE"] = "false"
+os.environ["STREAMLIT_SERVER_PORT"] = "8501"
+os.environ["STREAMLIT_BROWSER_SERVER_PORT"] = "8501"
+os.environ["STREAMLIT_SERVER_HEADLESS"] = "false"
+
 # Ensure project root is in sys.path (supports both source execution and PyInstaller frozen bundle)
 if getattr(sys, "frozen", False):
     PROJECT_ROOT = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
@@ -75,6 +81,9 @@ def launch_streamlit_direct() -> bool:
     """
     candidates = [
         os.path.join(PROJECT_ROOT, "dashboard.py"),
+        os.path.join(PROJECT_ROOT, "_internal", "dashboard.py"),
+        os.path.join(os.path.dirname(sys.executable), "dashboard.py"),
+        os.path.join(os.path.dirname(sys.executable), "_internal", "dashboard.py"),
         os.path.join(PROJECT_ROOT, "dashboard", "app.py"),
         os.path.join(PROJECT_ROOT, "app.py")
     ]
@@ -92,6 +101,26 @@ def launch_streamlit_direct() -> bool:
         import time
         from streamlit.web import bootstrap
 
+        # Fix 404 Not Found in PyInstaller frozen mode:
+        # streamlit.file_util.get_static_dir() looks inside the PYZ/zip where os.path.isdir() is False.
+        # We redirect it to the extracted static asset directory in _internal/streamlit/static.
+        try:
+            import streamlit.file_util as fu
+            static_candidates = [
+                os.path.join(getattr(sys, "_MEIPASS", ""), "streamlit", "static"),
+                os.path.join(os.path.dirname(sys.executable), "_internal", "streamlit", "static"),
+                os.path.join(os.path.dirname(sys.executable), "streamlit", "static"),
+                os.path.join(PROJECT_ROOT, "streamlit", "static"),
+                os.path.join(PROJECT_ROOT, "_internal", "streamlit", "static"),
+            ]
+            for sc in static_candidates:
+                if sc and os.path.isdir(sc):
+                    real_static = os.path.abspath(sc)
+                    fu.get_static_dir = lambda: real_static
+                    break
+        except Exception:
+            pass
+
         def monitor_tab_close():
             from streamlit.runtime.runtime import Runtime, RuntimeState
 
@@ -99,10 +128,10 @@ def launch_streamlit_direct() -> bool:
             while not Runtime.exists():
                 time.sleep(0.5)
 
-            # Wait up to 60s for the browser to open and connect
+            # Wait up to 120s for the browser to open and connect
             connected_once = False
             start_wait = time.time()
-            while time.time() - start_wait < 60:
+            while time.time() - start_wait < 120:
                 time.sleep(0.5)
                 if not Runtime.exists():
                     return
@@ -111,7 +140,7 @@ def launch_streamlit_direct() -> bool:
                     break
 
             if not connected_once:
-                # Browser never connected within 60 seconds
+                # Browser never connected within 120 seconds
                 os._exit(0)
 
             # Once connected, monitor for tab closure
@@ -126,20 +155,65 @@ def launch_streamlit_direct() -> bool:
                 elif state == RuntimeState.NO_SESSIONS_CONNECTED:
                     if disconnect_time is None:
                         disconnect_time = time.time()
-                    elif time.time() - disconnect_time >= 3.0:
-                        # 3 second grace period for page refresh (F5)
+                    elif time.time() - disconnect_time >= 4.0:
+                        # 4 second grace period for page refresh (F5)
                         os._exit(0)
 
         # Start browser tab monitor thread
         watcher = threading.Thread(target=monitor_tab_close, daemon=True)
         watcher.start()
 
+        # Explicitly open browser tab via Windows Shell (100% reliable in GUI apps)
+        def auto_open_browser():
+            time.sleep(1.2)
+            url = "http://localhost:8501"
+            try:
+                os.startfile(url)
+            except Exception:
+                import webbrowser
+                webbrowser.open(url)
+
+        threading.Thread(target=auto_open_browser, daemon=True).start()
+
+        # Lightweight redirect server for port 3000 in case user opens http://localhost:3000
+        def run_port_3000_redirect():
+            import http.server
+            import socketserver
+
+            class RedirectHandler(http.server.BaseHTTPRequestHandler):
+                def do_GET(self):
+                    self.send_response(302)
+                    self.send_header("Location", f"http://localhost:8501{self.path}")
+                    self.end_headers()
+
+                def log_message(self, *args):
+                    pass
+
+            try:
+                with socketserver.TCPServer(("127.0.0.1", 3000), RedirectHandler) as srv:
+                    srv.serve_forever()
+            except Exception:
+                pass
+
+        threading.Thread(target=run_port_3000_redirect, daemon=True).start()
+
+        import streamlit.config as cfg
+
         flag_options = {
             "server.headless": False,
+            "server.port": 8501,
+            "browser.serverPort": 8501,
+            "browser.serverAddress": "localhost",
             "browser.gatherUsageStats": False,
             "global.developmentMode": False,
             "server.runOnSave": False,
         }
+
+        bootstrap.load_config_options(flag_options)
+        cfg.set_option("global.developmentMode", False)
+        cfg.set_option("server.port", 8501)
+        cfg.set_option("browser.serverPort", 8501)
+        cfg.set_option("server.headless", False)
 
         bootstrap.run(target_dashboard, is_hello=False, args=[], flag_options=flag_options)
         return True

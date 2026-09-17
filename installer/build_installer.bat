@@ -48,12 +48,8 @@ echo [4/4] Compiling single-file Windows Installer (DClean-Setup-v1.0.exe)...
 
 set "ISCC_PATH="
 if exist "%LOCALAPPDATA%\Programs\Inno Setup 6\iscc.exe" set "ISCC_PATH=%LOCALAPPDATA%\Programs\Inno Setup 6\iscc.exe"
-if "%ISCC_PATH%"=="" if exist "C:\Program Files (x86)\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files (x86)\Inno Setup 6\iscc.exe"
-if "%ISCC_PATH%"=="" if exist "C:\Program Files\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files\Inno Setup 6\iscc.exe"
-if "%ISCC_PATH%"=="" (
-    where iscc >nul 2>&1
-    if %ERRORLEVEL% EQU 0 set "ISCC_PATH=iscc"
-)
+if not defined ISCC_PATH if exist "C:\Program Files\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files\Inno Setup 6\iscc.exe"
+if not defined ISCC_PATH if exist "C:\Program Files (x86)\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 
 if not defined ISCC_PATH (
     echo.
