@@ -13,12 +13,21 @@ datas = [
     (os.path.join(PROJECT_ROOT, "installer", "assets"), "installer/assets"),
 ]
 
+if os.path.exists(os.path.join(PROJECT_ROOT, "dashboard.py")):
+    datas.append((os.path.join(PROJECT_ROOT, "dashboard.py"), "."))
+
 hiddenimports = [
+    "pandas",
+    "numpy",
+    "sqlite3",
     "sklearn",
     "sklearn.pipeline",
     "sklearn.feature_extraction.text",
     "sklearn.linear_model",
+    "sklearn.neighbors",
+    "sklearn.utils",
     "scipy",
+    "scipy.sparse",
     "scipy.sparse.csgraph",
     "openpyxl",
     "phonenumbers",

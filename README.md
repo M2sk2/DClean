@@ -66,23 +66,29 @@ dclean dashboard
 
 ## 📦 Installation
 
-### Option A: Windows One-Click Installer (Zero Admin Rights Needed)
-Double-click [`installer/install.bat`](installer/install.bat) or run in PowerShell:
+### Option A: Windows Single-File Setup Wizard (Recommended — No Python Needed)
+Download and run **`DClean-Setup-v1.0.exe`**:
+
+- **Zero prerequisites**: Python is not required. All engines, ML models, and dependencies are self-contained.
+- **Start Menu & Desktop**: Adds DClean to your Windows Start Menu (searchable by typing "DClean") and Desktop.
+- **Windows Explorer Right-Click Menu**: Instantly registers the **"Clean with DClean"** right-click option for `.xlsx`, `.csv`, and `.xlsm` files.
+- **Windows Uninstaller**: Registered in Windows *Installed Apps / Add or Remove Programs* for clean 1-click removal.
+
+*(To rebuild the installer from source at any time, run [`installer/build_installer.bat`](installer/build_installer.bat))*
+
+### Option B: PowerShell / Batch One-Click Installer (From Repository)
+If you downloaded or cloned the project folder, double-click [`installer/install.bat`](installer/install.bat) or run in PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File installer/install.ps1
 ```
 
 - Installs to `%LocalAppData%\Programs\DClean`.
-- Adds **Desktop** and **Start Menu** shortcuts.
-- Adds the global `dclean` command to your terminal `PATH`.
-- Adds the **"Clean with DClean"** right-click context menu.
-- To uninstall cleanly anytime: run [`installer/uninstall.bat`](installer/uninstall.bat).
+- Creates local virtual environment and installs dependencies from `requirements.txt`.
+- Adds Start Menu, Desktop, and terminal `dclean` PATH shortcuts.
+- To uninstall: run [`installer/uninstall.bat`](installer/uninstall.bat).
 
-> [!NOTE]
-> During installation, step `[4/6]` downloads and sets up the local Python dependencies. This takes 1–2 minutes on first run.
-
-### Option B: Run from Source (Cross-Platform)
+### Option C: Run from Source (Cross-Platform)
 Works on Windows, macOS, and Linux with Python 3.10+:
 
 ```powershell

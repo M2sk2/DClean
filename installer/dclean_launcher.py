@@ -12,8 +12,12 @@ import argparse
 import subprocess
 from typing import Optional
 
-# Ensure project root is in sys.path
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+# Ensure project root is in sys.path (supports both source execution and PyInstaller frozen bundle)
+if getattr(sys, "frozen", False):
+    PROJECT_ROOT = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
+else:
+    PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
@@ -99,12 +103,18 @@ def launch_desktop_gui(initial_file: Optional[str] = None):
     root.minsize(640, 480)
 
     # Set icon if available
-    icon_path = os.path.join(os.path.dirname(__file__), "assets", "dclean_icon.ico")
-    if os.path.exists(icon_path):
-        try:
-            root.iconbitmap(icon_path)
-        except Exception:
-            pass
+    icon_candidates = [
+        os.path.join(PROJECT_ROOT, "installer", "assets", "dclean_icon.ico"),
+        os.path.join(PROJECT_ROOT, "assets", "dclean_icon.ico"),
+        os.path.join(os.path.dirname(__file__), "assets", "dclean_icon.ico")
+    ]
+    for ic in icon_candidates:
+        if os.path.exists(ic):
+            try:
+                root.iconbitmap(ic)
+                break
+            except Exception:
+                pass
 
     # Styling
     style = ttk.Style(root)

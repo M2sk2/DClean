@@ -8,6 +8,10 @@ __pycache__/
 .coverage
 htmlcov/
 
+# PyInstaller / Build Artifacts
+build/
+dist/
+
 # Environments
 .env
 .venv

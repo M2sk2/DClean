@@ -89,3 +89,30 @@ def test_dashboard_file_syntax_and_runner_connection():
                 imported_names.append(alias.name)
     assert "PipelineRunner" in imported_names, "dashboard.py must import PipelineRunner"
 
+
+def test_build_script_and_setup_shortcuts():
+    """Verify build_installer.bat exists and dclean_setup.iss configures Start Menu and Desktop shortcuts."""
+    installer_dir = os.path.join(WORKSPACE_ROOT, "installer")
+    build_bat = os.path.join(installer_dir, "build_installer.bat")
+    assert os.path.exists(build_bat), "build_installer.bat must exist"
+
+    iss_file = os.path.join(installer_dir, "dclean_setup.iss")
+    with open(iss_file, "r", encoding="utf-8") as f:
+        iss_content = f.read()
+
+    assert "{autoprograms}\\{#MyAppName}" in iss_content or "{autoprograms}" in iss_content, "Start Menu shortcut must be configured"
+    assert "{autodesktop}" in iss_content, "Desktop shortcut must be configured"
+    assert "DClean-Setup-v1.0" in iss_content, "Output filename must be configured"
+
+
+def test_compiled_executables_exist():
+    """Verify that the standalone executable and single-file setup wizard were built."""
+    standalone_exe = os.path.join(WORKSPACE_ROOT, "dist", "DClean", "DClean.exe")
+    setup_exe = os.path.join(WORKSPACE_ROOT, "dist", "DClean-Setup-v1.0.exe")
+
+    assert os.path.exists(standalone_exe), "dist/DClean/DClean.exe must exist"
+    assert os.path.getsize(standalone_exe) > 10_000_000, "DClean.exe must be a valid binary"
+
+    assert os.path.exists(setup_exe), "dist/DClean-Setup-v1.0.exe must exist"
+    assert os.path.getsize(setup_exe) > 50_000_000, "DClean-Setup-v1.0.exe must be a valid setup wizard"
+
