@@ -112,71 +112,235 @@ def test_auto_contract_generator():
     assert mappings["هل توافق على الشروط؟"] == "Categorical/MultiSelect"
     assert mappings["لماذا ترغب بالانضمام؟"] == "Free-Form"
 
-def test_end_to_end_workshop_dataset():
-    dataset_file = r"c:\Users\Admin\Documents\DataCleaning\RawData\Distraction_Era_Workshop_Dataset.xlsx"
-    contract_file = r"c:\Users\Admin\Documents\DataCleaning\config\workshop_contract.yaml"
-    test_db = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_workshop.db"
-    test_output_excel = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_workshop_cleaned.xlsx"
+def test_end_to_end_workshop_dataset(tmp_path):
+    from pathlib import Path
 
-    if os.path.exists(test_db):
-        os.remove(test_db)
-    if os.path.exists(test_output_excel):
-        os.remove(test_output_excel)
+    project_root = Path(__file__).resolve().parents[1]
 
-    runner = PipelineRunner(contract_path=contract_file, db_path=test_db)
-    summary = runner.run(input_file_path=dataset_file, output_excel_path=test_output_excel)
+    dataset_file = (
+        project_root
+        / "RawData"
+        / "Distraction_Era_Workshop_Dataset.xlsx"
+    )
+
+    contract_file = (
+        project_root
+        / "config"
+        / "workshop_contract.yaml"
+    )
+
+    test_db = tmp_path / "test_workshop.db"
+    test_output_excel = tmp_path / "test_workshop_cleaned.xlsx"
+
+    runner = PipelineRunner(
+        contract_path=str(contract_file),
+        db_path=str(test_db),
+    )
+
+    summary = runner.run(
+        input_file_path=str(dataset_file),
+        output_excel_path=str(test_output_excel),
+    )
 
     assert summary.total_rows == 40
-    assert summary.quarantined_rows == 3 # Rows 38, 39, 40
+    assert summary.quarantined_rows == 3
     assert summary.valid_rows == 37
-    assert summary.duplicate_events_merged >= 2 # Tariq Al-Ali, Layan Al-Sharif
+    assert summary.duplicate_events_merged >= 2
     assert summary.status == "HEALTHY"
-    assert os.path.exists(test_db)
-    assert os.path.exists(test_output_excel)
+    assert test_db.exists()
+    assert test_output_excel.exists()
 
-def test_end_to_end_developers_committee_55_columns():
-    dataset_file = r"c:\Users\Admin\Documents\DataCleaning\RawData\Developers_Committee_2026_Responses.xlsx"
-    contract_file = r"c:\Users\Admin\Documents\DataCleaning\config\developers_committee_contract.yaml"
-    test_db = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_committee.db"
-    test_output_excel = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_committee_cleaned.xlsx"
+def test_end_to_end_developers_committee_55_columns(tmp_path):
+    from pathlib import Path
 
-    if os.path.exists(test_db):
-        os.remove(test_db)
-    if os.path.exists(test_output_excel):
-        os.remove(test_output_excel)
+    project_root = Path(__file__).resolve().parents[1]
 
-    runner = PipelineRunner(contract_path=contract_file, db_path=test_db)
-    summary = runner.run(input_file_path=dataset_file, output_excel_path=test_output_excel)
+    dataset_file = (
+        project_root
+        / "RawData"
+        / "Developers_Committee_2026_Responses.xlsx"
+    )
+
+    contract_file = (
+        project_root
+        / "config"
+        / "developers_committee_contract.yaml"
+    )
+
+    test_db = tmp_path / "test_committee.db"
+    test_output_excel = tmp_path / "test_committee_cleaned.xlsx"
+
+    runner = PipelineRunner(
+        contract_path=str(contract_file),
+        db_path=str(test_db),
+    )
+
+    summary = runner.run(
+        input_file_path=str(dataset_file),
+        output_excel_path=str(test_output_excel),
+    )
 
     assert summary.total_rows == 23
-    assert summary.quarantined_rows == 1 # The row with missing name
+    assert summary.quarantined_rows == 1
     assert summary.valid_rows == 22
     assert summary.status == "HEALTHY"
-    assert os.path.exists(test_db)
-    assert os.path.exists(test_output_excel)
+    assert test_db.exists()
+    assert test_output_excel.exists()
+def test_multisheet_excel_processing_and_cross_sheet_dedup(tmp_path):
+    from pathlib import Path
 
-def test_multisheet_excel_processing_and_cross_sheet_dedup():
-    dataset_file = r"c:\Users\Admin\Documents\DataCleaning\RawData\MultiSheet_Workshop_Batches.xlsx"
-    test_db = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_multisheet.db"
-    test_output_excel = r"c:\Users\Admin\Documents\DataCleaning\CleanData\test_multisheet_cleaned.xlsx"
+    project_root = Path(__file__).resolve().parents[1]
 
-    if os.path.exists(test_db):
-        os.remove(test_db)
-    if os.path.exists(test_output_excel):
-        os.remove(test_output_excel)
+    dataset_file = (
+        project_root
+        / "RawData"
+        / "MultiSheet_Workshop_Batches.xlsx"
+    )
 
-    # Uses auto-generated schema contract since no contract path provided!
-    runner = PipelineRunner(contract_path=None, db_path=test_db)
-    summary = runner.run(input_file_path=dataset_file, output_excel_path=test_output_excel)
+    test_db = tmp_path / "test_multisheet.db"
+    test_output_excel = tmp_path / "test_multisheet_cleaned.xlsx"
 
-    # Sheet 1 has 3 rows, Sheet 2 has 2 rows = Total 5 rows
+    runner = PipelineRunner(
+        contract_path=None,
+        db_path=str(test_db),
+    )
+
+    summary = runner.run(
+        input_file_path=str(dataset_file),
+        output_excel_path=str(test_output_excel),
+    )
+
     assert summary.total_rows == 5
     assert summary.valid_rows == 5
     assert "Morning_Session" in summary.sheet_name
     assert "Evening_Session" in summary.sheet_name
-    # Abdullah Al-Salem is in BOTH sheets! The MDM resolver merges him into 1 unique entity:
-    # 3 in Sheet 1 + 1 new in Sheet 2 = 4 unique entities
     assert summary.unique_persons_resolved == 4
     assert summary.duplicate_events_merged >= 1
-    assert os.path.exists(test_db)
-    assert os.path.exists(test_output_excel)
+    assert test_db.exists()
+    assert test_output_excel.exists()
+def test_entity_resolver_name_similarity_match():
+    from pipeline.entity_resolver import HybridEntityResolver, jaro_winkler_similarity
+    from pipeline.name_parser import ArabicNameParser
+
+    resolver = HybridEntityResolver()
+
+    parsed_name_1 = ArabicNameParser.parse_english_name(
+        "Mohammed Ahmed Ali"
+    )
+
+    person1, is_duplicate1 = resolver.resolve_person(
+        phone_e164=None,
+        email=None,
+        parsed_name_ar=None,
+        parsed_name_en=parsed_name_1,
+        university="KSU",
+    )
+
+    parsed_name_2 = ArabicNameParser.parse_english_name(
+    "Mohamad Khaled Omar"
+)
+
+    similarity = jaro_winkler_similarity(
+        person1.full_name_en.casefold(),
+        parsed_name_2.normalized_key.casefold(),
+    )
+
+    assert similarity < 0.88
+
+    person2, is_duplicate2 = resolver.resolve_person(
+        phone_e164=None,
+        email=None,
+        parsed_name_ar=None,
+        parsed_name_en=parsed_name_2,
+        university="KSU",
+    )
+
+    assert person1.person_id != person2.person_id
+
+def test_registration_event_merges_metadata_even_when_new_event_is_older():
+    from pipeline.entity_resolver import HybridEntityResolver
+    from pipeline.schema import FactRegistration
+
+    resolver = HybridEntityResolver()
+
+    registration1 = FactRegistration(
+        registration_id="registration-1",
+        person_id="person-1",
+        dataset_id="dataset-1",
+        sheet_name="Morning",
+        attended_flag=False,
+        registered_at="2026-09-15T10:00:00",
+        raw_metadata={
+            "source": "morning",
+            "role": "student",
+        },
+    )
+
+    registration2 = FactRegistration(
+        registration_id="registration-2",
+        person_id="person-1",
+        dataset_id="dataset-1",
+        sheet_name="Evening",
+        attended_flag=False,
+        registered_at="2026-09-15T09:00:00",
+        raw_metadata={
+            "location": "Jeddah",
+        },
+    )
+
+    resolver.add_registration_event(registration1)
+    resolver.add_registration_event(registration2)
+
+    stored_registration = resolver.registrations[0]
+
+    assert len(resolver.registrations) == 1
+    assert resolver.merged_duplicate_count == 1
+
+    assert stored_registration.raw_metadata["source"] == "morning"
+    assert stored_registration.raw_metadata["role"] == "student"
+    assert stored_registration.raw_metadata["location"] == "Jeddah"
+
+    assert stored_registration.registered_at == "2026-09-15T10:00:00"
+
+def test_storage_enforces_foreign_key_integrity(tmp_path):
+    import sqlite3
+
+    from pipeline.schema import AuditSummary, FactRegistration
+    from pipeline.storage import StorageManager
+
+    db_path = tmp_path / "foreign_key_test.db"
+
+    storage = StorageManager(db_path=str(db_path))
+
+    registration = FactRegistration(
+        person_id="non-existent-person",
+        dataset_id="dataset-1",
+        sheet_name="Sheet1",
+        registered_at="2026-09-16T10:00:00",
+    )
+
+    summary = AuditSummary(
+        source_file="test.xlsx",
+        sheet_name="Sheet1",
+        total_rows=1,
+        valid_rows=1,
+        quarantined_rows=0,
+        unique_persons_resolved=0,
+        duplicate_events_merged=0,
+        quarantine_rate_pct=0.0,
+        status="HEALTHY",
+    )
+
+    try:
+        storage.save_to_sqlite(
+            persons=[],
+            registrations=[registration],
+            quarantine=[],
+            summary=summary,
+        )
+    except sqlite3.IntegrityError:
+        pass
+    else:
+        raise AssertionError(
+            "Foreign key constraint was not enforced."
+        )
