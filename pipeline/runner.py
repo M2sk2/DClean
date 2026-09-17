@@ -2,7 +2,7 @@ import os
 import re
 import openpyxl
 import csv
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Dict, Any, List, Optional, Tuple
 
 from pipeline.schema import CleanPerson, FactRegistration, QuarantineRecord, AuditSummary
@@ -313,7 +313,7 @@ class PipelineRunner:
                     major=clean_major,
                     university=clean_uni,
                     academic_lvl=clean_academic,
-                    registered_at=clean_timestamp or "",
+                    registered_at=clean_timestamp or datetime.now(timezone.utc).isoformat(),
                     raw_metadata=extra_meta
                 )
                 self.resolver.add_registration_event(fact_reg)

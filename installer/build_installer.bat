@@ -46,12 +46,11 @@ echo Standalone binary built successfully at: dist\DClean\DClean.exe
 :: 4. Locate Inno Setup Compiler
 echo [4/4] Compiling single-file Windows Installer (DClean-Setup-v1.0.exe)...
 
-set "ISCC_PATH="
-if exist "%LOCALAPPDATA%\Programs\Inno Setup 6\iscc.exe" set "ISCC_PATH=%LOCALAPPDATA%\Programs\Inno Setup 6\iscc.exe"
-if not defined ISCC_PATH if exist "C:\Program Files\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files\Inno Setup 6\iscc.exe"
-if not defined ISCC_PATH if exist "C:\Program Files (x86)\Inno Setup 6\iscc.exe" set "ISCC_PATH=C:\Program Files (x86)\Inno Setup 6\iscc.exe"
+set "ISCC_PATH=%LOCALAPPDATA%\Programs\Inno Setup 6\iscc.exe"
+if not exist "%ISCC_PATH%" set "ISCC_PATH=C:\Program Files\Inno Setup 6\iscc.exe"
+if not exist "%ISCC_PATH%" set "ISCC_PATH=C:\Program Files (x86)\Inno Setup 6\iscc.exe"
 
-if not defined ISCC_PATH (
+if not exist "%ISCC_PATH%" (
     echo.
     echo [WARNING] Inno Setup compiler (iscc.exe) not found.
     echo Standalone bundle dist\DClean\DClean.exe is ready,
