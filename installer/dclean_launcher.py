@@ -70,15 +70,19 @@ def launch_dashboard() -> bool:
     If found, launches it via Streamlit.
     """
     candidates = [
-        os.path.join(PROJECT_ROOT, "dashboard", "app.py"),
         os.path.join(PROJECT_ROOT, "dashboard.py"),
+        os.path.join(PROJECT_ROOT, "dashboard", "app.py"),
         os.path.join(PROJECT_ROOT, "app.py")
     ]
     for c in candidates:
         if os.path.exists(c):
             print(f"[DClean] Found dashboard at {c}. Launching Streamlit...")
-            subprocess.run([sys.executable, "-m", "streamlit", "run", c])
-            return True
+            try:
+                subprocess.run([sys.executable, "-m", "streamlit", "run", c])
+                return True
+            except Exception as e:
+                print(f"[DClean] Could not start streamlit: {e}")
+                return False
     return False
 
 def launch_desktop_gui(initial_file: Optional[str] = None):
@@ -318,8 +322,12 @@ def main():
         success = run_headless_clean(args.file, contract_path=args.contract)
         sys.exit(0 if success else 1)
 
-    # 3. If dashboard exists and no specific command, offer dashboard or GUI
-    # For now, default to the clean native desktop GUI
+    # 3. If dashboard exists and GUI not explicitly forced, launch dashboard
+    if not args.gui:
+        if launch_dashboard():
+            return
+
+    # 4. Fallback to native lightweight desktop GUI
     launch_desktop_gui(initial_file=args.file)
 
 if __name__ == "__main__":

@@ -66,6 +66,9 @@ Copy-Item "$SourceRoot\config\*" "$TargetDir\config" -Recurse -Force
 Copy-Item "$SourceRoot\installer\*.py" "$TargetDir\installer" -Force
 Copy-Item "$SourceRoot\installer\assets\*" "$TargetDir\installer\assets" -Recurse -Force
 Copy-Item "$SourceRoot\requirements.txt" "$TargetDir\requirements.txt" -Force
+if (Test-Path "$SourceRoot\dashboard.py") {
+    Copy-Item "$SourceRoot\dashboard.py" "$TargetDir\dashboard.py" -Force
+}
 
 Write-Host "  Files successfully copied to $TargetDir" -ForegroundColor Green
 
@@ -84,7 +87,7 @@ if (-not $SkipVenv) {
     Write-Host "  Installing dependencies from requirements.txt..." -ForegroundColor Cyan
     & $VenvPython -m pip install --quiet --upgrade pip
     & $VenvPython -m pip install --quiet -r "$TargetDir\requirements.txt"
-    & $VenvPython -m pip install --quiet scikit-learn joblib
+    & $VenvPython -m pip install --quiet scikit-learn joblib streamlit pandas
     Write-Host "  Dependencies verified and installed." -ForegroundColor Green
 } else {
     $VenvPython = "python"
@@ -107,6 +110,13 @@ $DcleanGuiBat = "$TargetDir\bin\dclean-gui.bat"
 @echo off
 start "" "$VenvPythonw" "$TargetDir\installer\dclean_launcher.py" %*
 "@ | Set-Content -Path $DcleanGuiBat -Encoding ASCII
+
+# Dashboard batch wrapper
+$DcleanDashBat = "$TargetDir\bin\dclean-dashboard.bat"
+@"
+@echo off
+"$VenvPython" -m streamlit run "$TargetDir\dashboard.py" %*
+"@ | Set-Content -Path $DcleanDashBat -Encoding ASCII
 
 # Desktop Shortcut
 $WScriptShell = New-Object -ComObject WScript.Shell
